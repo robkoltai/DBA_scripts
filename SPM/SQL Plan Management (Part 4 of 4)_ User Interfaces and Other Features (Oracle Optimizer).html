@@ -1,0 +1,645 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<!-- Page Info -->
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="description" content="Blogs.Oracle.Com - Oracle Optimizer">
+  <meta name="keywords" content="blogs, oracle, blogs.oracle, blogging, bloggers">
+		            <title>SQL Plan Management (Part 4 of 4):  User Interfaces and Other Features (Oracle Optimizer)</title>
+                           <meta http-equiv="Content-Language" content="en" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta http-equiv="imagetoolbar" content="no" />
+
+        
+            <link rel="alternate" type="application/atom+xml" title="Recent Entries (Atom)"  href="https://blogs.oracle.com/optimizer/feed/entries/atom" />
+    <link rel="alternate" type="application/rss+xml"  title="Recent Entries (RSS)"   href="https://blogs.oracle.com/optimizer/feed/entries/rss" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Comments (Atom)" href="https://blogs.oracle.com/optimizer/feed/comments/atom" />
+    <link rel="alternate" type="application/rss+xml"  title="Recent Comments (RSS)"  href="https://blogs.oracle.com/optimizer/feed/comments/rss" />
+
+    
+    
+<!-- Stylesheets -->
+<link rel="stylesheet" href="https://blogs.oracle.com/optimizer/resource/oracle2col/theme.css" type="text/css" media="screen" />
+
+<!-- Favicon -->
+<link rel="shortcut icon" href="https://blogs.oracle.com/optimizer/resource/oracle2col/favicon.gif" />    	
+                    <script type="text/javascript">
+                      var w=window;
+                      if(w.performance||w.mozPerformance||w.msPerformance||w.webkitPerformance){var d=document,AKSB=AKSB||{};AKSB.q=[];AKSB.mark=function(a,b){AKSB.q.push(["mark",a,b||(new Date).getTime()])};AKSB.measure=function(a,b,c){AKSB.q.push(["measure",a,b,c||(new Date).getTime()])};AKSB.done=function(a){AKSB.q.push(["done",a])};AKSB.mark("firstbyte",(new Date).getTime());AKSB.prof={custid:"87563",ustr:"ECDHE-RSA-AES256-GCM-SHA384",originlat:0,clientrtt:27,ghostip:"23.6.113.222",
+                      ipv6:false,pct:10,clientip:"194.149.4.66",requestid:"1d12f1f8",protocol:"",blver:10,akM:"dscx",akN:"ae",akTT:"O",akTX:"1",akTI:"1d12f1f8",ai:"165106",ra:"",pmgn:"",pmgi:"",pmp:""};(function(a){var b=
+                      d.createElement("script");b.async="async";b.src=a;a=d.getElementsByTagName("script");a=a[a.length-1];a.parentNode.insertBefore(b,a)})(("https:"===d.location.protocol?"https:":"http:")+"//ds-aksb-a.akamaihd.net/aksb.min.js")};
+                    </script>
+                    </head>
+	<body>
+		<div id="container" class="two-columns"> <!-- Note: Change the class from "two-columns" to "three-columns" if needed -->
+			
+			<!-- Header -->
+			<div id="header">
+				<ul id="nav">
+					<li id="logo"><h6><a href="http://www.oracle.com">Oracle</a></h6></li>
+					<li class="current"><a href="/">Blogs Home</a></li>
+					<li><a href="http://www.oracle.com/us/products/index.html">Products &amp; Services</a></li>
+					<li><a href="http://www.oracle.com/technetwork/indexes/downloads/index.html">Downloads</a></li>
+					<li><a href="http://www.oracle.com/us/support/index.html">Support</a></li>
+					<li><a href="http://www.oracle.com/us/partnerships/index.html">Partners</a></li>
+					<li><a href="http://www.oracle.com/us/community/index.html">Communities</a></li>
+					<li><a href="http://www.oracle.com/us/corporate/index.html">About</a></li>
+                                            <li id="signIn"><a href="/roller-ui/login-redirect.rol">Login</a></li>
+                    				</ul>
+				<div id="jumbotron">
+					<h4>Oracle Blog</h4>
+          <h5><a href="https://blogs.oracle.com/optimizer/">Oracle Optimizer</a></h5>
+          <h5 class="subhead"> Insight into the workings of the Optimizer</h5>
+				</div>
+                																										</div>
+			
+			<!-- Content -->
+			<div id="content">
+                <div id="mainColumn">
+                    
+                    <!-- Previous and Next Entries -->
+                    <div id="pager">
+                                                    &laquo; <a href="https://blogs.oracle.com/optimizer/entry/sql_plan_management_part_3_of_4_evolving_sql_plan_baselines_1">SQL Plan Management...</a> |  
+                <a href="/optimizer/">Main</a>
+                | <a href="https://blogs.oracle.com/optimizer/entry/maintaining_statistics_on_large_partitioned_tables">Maintaining statisti...</a> &raquo;
+                        </div>
+
+                    <!-- Entries -->
+				    
+                <div class="day">
+
+
+	<div class="entry" id="sql_plan_management_part_4_of_4_user_interfaces_and_other_features">
+
+	<h3 class="entry-title">
+			SQL Plan Management (Part 4 of 4):  User Interfaces and Other Features
+	    </h3>
+
+    <h4 class="entry-meta">By Maria Colgan-Oracle on <a href="#">Feb 02, 2009</a></h4>
+
+    <div class="entry-body">
+                                        	In the first three parts of this article, we have seen how SQL plan baselines are created, used and evolved.  In this final installment, we will show some user interfaces, describe the interaction of SPM with other features and answer some of your questions.
+  
+  
+  
+  <p> </p> 
+  <h2>DBMS_SPM package</h2>
+
+A new package, <span style="font-family: 'courier new';">DBMS_SPM</span>, allows you to manage plan histories.  We have already seen in previous examples how you can use it to create and evolve SQL plan baselines.  Other management functions include changing attributes (like enabled status and plan name) of plans or dropping plans.  You need the <span style="font-family: 'courier new';">ADMINISTER SQL MANAGEMENT OBJECT</span> privilege to execute this package.<br /><br /> 
+  <h3>Viewing the plan history</h3>
+
+Regardless of how a plan history is created, you can view details about the various plans in the view <span style="font-family: 'courier new';">DBA_SQL_PLAN_BASELINES</span>.  At the end of Part 3 of this blog, we saw that the SQL statement had two accepted plans:
+<br /><br /><span style="font-family: 'courier new'; font-size: 80%;">SQL&gt; select sql_text, sql_handle, plan_name, enabled, accepted<br />&nbsp; 2&nbsp; from dba_sql_plan_baselines;</span><span style="font-family: 'courier new'; font-size: 80%;"><br /><br />SQL_TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SQL_HANDLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PLAN_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ENA ACC<br />------------------------ ------------------------ ----------------------------- --- ---<br />select p.prod_name, s.am SYS_SQL_4bf04d85fcc170b0 SYS_SQL_PLAN_fcc170b08cbcb825 YES YES<br />ount_sold, t.calendar_ye<br />ar<br />from sales s, products p<br />, times t<br />where s.prod_id = p.prod<br />_id<br />&nbsp; and s.time_id = t.time<br />_id<br />&nbsp; and p.prod_id &lt; :pid<br /><br />select p.prod_name, s.am SYS_SQL_4bf04d85fcc170b0 SYS_SQL_PLAN_fcc170b0a62d0f4d YES YES<br />ount_sold, t.calendar_ye<br />ar<br />from sales s, products p<br />, times t<br />where s.prod_id = p.prod<br />_id<br />&nbsp; and s.time_id = t.time<br />_id<br />&nbsp; and p.prod_id &lt; :pid </span><span style="font-family: 'courier new'; font-size: 80%;"><br /><br /> </span> 
+  <p>
+
+The SQL handle is a unique identifier for each SQL statement that you can use when managing your plan history using the <span style="font-family: 'courier new';">DBMS_SPM</span> package.<br /> </p> 
+  <h3>Creating an accepted plan by modifying the SQL text</h3>
+
+Some of you may be manually tuning SQL statements by adding hints or otherwise modifying the SQL text.  If you enable automatic capture of SQL plans and then execute this statement, you will be creating a SQL plan baseline for this <b>modified</b> statement.  What you most likely want, however, is to add this plan to the plan history of the <b>original</b> SQL statement.  Here's how you can do this using the above SQL statement as an example. <br />
+
+Let's modify the SQL statement, execute it and look at the plan: <br /> <span style="font-family: 'courier new'; font-size: 90%;"><br />SQL&gt; var pid number<br />SQL&gt; exec :pid := 100;<br /><br />PL/SQL procedure successfully completed.<br /><br />SQL&gt; select <b>/*+ leading(t) */</b> p.prod_name, s.amount_sold, t.calendar_year<br />2&nbsp;&nbsp;&nbsp; from sales s, products p, times t<br />3&nbsp;&nbsp;&nbsp; where s.prod_id = p.prod_id<br />4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; and s.time_id = t.time_id<br />5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; and p.prod_id &lt; :pid;<br /><br />PROD_NAME AMOUNT_SOLD CALENDAR_YEAR<br />--------- ----------- -------------<br />...<br />9 rows selected.<br /><br />SQL&gt; select * from table(dbms_xplan.display_cursor('b17wnz4y8bqv1', 0, 'basic note'));<br /><br />PLAN_TABLE_OUTPUT<br />-------------------------------------------------------------------------------<br />EXPLAINED SQL STATEMENT:<br />------------------------<br />select /*+ leading(t) */ p.prod_name, s.amount_sold, t.calendar_year<br />from sales s, products p, times t where s.prod_id = p.prod_id&nbsp;&nbsp; and<br />s.time_id = t.time_id&nbsp;&nbsp; and p.prod_id &lt; :pid<br /><br />Plan hash value: 2290436051<br /><br />---------------------------------------------------------------<br />| Id&nbsp; | Operation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />---------------------------------------------------------------<br />|&nbsp;&nbsp; 0 | SELECT STATEMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 1 |&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 2 |&nbsp;&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 3 |&nbsp;&nbsp;&nbsp; TABLE ACCESS FULL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | TIMES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 4 |&nbsp;&nbsp;&nbsp; PARTITION RANGE ALL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 5 |&nbsp;&nbsp;&nbsp;&nbsp; TABLE ACCESS BY LOCAL INDEX ROWID| SALES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 6 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP CONVERSION TO ROWIDS&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 7 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SALES_PROD_BIX |<br />| &nbsp; 8 |&nbsp;&nbsp; TABLE ACCESS BY INDEX ROWID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | PRODUCTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 9 |&nbsp;&nbsp;&nbsp; INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | PRODUCTS_PK&nbsp;&nbsp;&nbsp; |<br />---------------------------------------------------------------<br /><br /><br />23 rows selected.<br /><br /></span>&nbsp;We can now create a new accepted plan for the original SQL statement by associating the modified statement's plan to the original statement's sql handle (obtained from <span style="font-family: 'courier new';">DBA_SQL_PLAN_BASELINES</span>):
+
+<br /><br /><span style="font-family: 'courier new'; font-size: 90%;">SQL&gt; var pls number<br />SQL&gt; exec :pls := dbms_spm.load_plans_from_cursor_cache( -<br />&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sql_id =&gt; 'b17wnz4y8bqv1', -<br />&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; plan_hash_value =&gt; 2290436051, -<br />&gt; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sql_handle =&gt; 'SYS_SQL_4bf04d85fcc170b0');</span><br /><br />If the original SQL statement does not already have a plan history (and thus no SQL handle), another version of <span style="font-family: 'courier new';">load_plans_from_cursor_cache</span> allows you to specify the original statement's text.<br /><br />
+
+To confirm that we now have three accepted plans for our SQL statement, let's check in <span style="font-family: 'courier new';"><br />DBA_SQL_PLAN_BASELINES</span>:<br /><br /> <span style="font-family: 'courier new'; font-size: 80%;">SQL&gt; select sql_text, sql_handle, plan_name, enabled, accepted<br />&nbsp; 2&nbsp; from dba_sql_plan_baselines;</span><span style="font-family: 'courier new'; font-size: 80%;"><br /><br />SQL_TEXT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SQL_HANDLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PLAN_NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ENA ACC<br />------------------------ ------------------------ ----------------------------- --- ---<br />select p.prod_name, s.am SYS_SQL_4bf04d85fcc170b0 SYS_SQL_PLAN_fcc170b0888547d3 YES YES<br />ount_sold, t.calendar_ye<br />ar<br />from sales s, products p<br />, times t<br />where s.prod_id = p.prod<br />_id<br />&nbsp; and s.time_id = t.time<br />_id<br />&nbsp; and p.prod_id &lt; :pid<br /><br />select p.prod_name, s.am SYS_SQL_4bf04d85fcc170b0 SYS_SQL_PLAN_fcc170b08cbcb825 YES YES<br />ount_sold, t.calendar_ye<br />ar<br />from sales s, products p<br />, times t<br />where s.prod_id = p.prod<br />_id<br />&nbsp; and s.time_id = t.time<br />_id<br />&nbsp; and p.prod_id &lt; :pid<br /><br />select p.prod_name, s.am SYS_SQL_4bf04d85fcc170b0 SYS_SQL_PLAN_fcc170b0a62d0f4d YES YES<br />ount_sold, t.calendar_ye<br />ar<br />from sales s, products p<br />, times t<br />where s.prod_id = p.prod<br />_id<br />&nbsp; and s.time_id = t.time<br />_id<br />&nbsp; and p.prod_id &lt; :pid </span><span style="font-family: 'courier new'; font-size: 80%;"></span> 
+  <p> </p> 
+  <h3>Displaying plans</h3>
+
+When the optimizer uses an accepted plan for a SQL statement, you can see it in the plan table (for explain) or <span style="font-family: 'courier new';">V$SQL_PLAN</span> (for shared cursors).  Let's explain the SQL statement above and display its plan:<br /> <span style="font-family: 'courier new'; font-size: 90%;">SQL&gt; explain plan for<br />&nbsp; 2&nbsp; select p.prod_name, s.amount_sold, t.calendar_year<br />&nbsp; 3&nbsp; from sales s, products p, times t<br />&nbsp; 4&nbsp; where s.prod_id = p.prod_id<br />&nbsp; 5&nbsp;&nbsp;&nbsp; and s.time_id = t.time_id<br />&nbsp; 6&nbsp;&nbsp;&nbsp; and p.prod_id &lt; :pid;<br /></span><span style="font-family: 'courier new'; font-size: 90%;"> 
+    <p>Explained.<br /><br />SQL&gt; select * from table(dbms_xplan.display('plan_table', null, 'basic note'));<br /><br />PLAN_TABLE_OUTPUT<br />-------------------------------------------------------------------------------<br />Plan hash value: 2787970893<br /><br />----------------------------------------------------------------<br />| Id&nbsp;&nbsp;| Operation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />----------------------------------------------------------------<br />|&nbsp;&nbsp; 0&nbsp;| SELECT STATEMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 1&nbsp;|&nbsp; NESTED LOOPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 2&nbsp;|&nbsp;&nbsp; NESTED LOOPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 3&nbsp;|&nbsp;&nbsp;&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 4&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; TABLE ACCESS BY INDEX ROWID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| PRODUCTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 5&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| PRODUCTS_PK&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 6&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; PARTITION RANGE ALL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 7&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TABLE ACCESS BY LOCAL INDEX ROWID| SALES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 8&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP CONVERSION TO ROWIDS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp;&nbsp; 9&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| SALES_PROD_BIX&nbsp;|<br />|&nbsp; 10&nbsp;|&nbsp;&nbsp;&nbsp; INDEX UNIQUE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| TIME_PK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />|&nbsp; 11&nbsp;|&nbsp;&nbsp; TABLE ACCESS BY INDEX ROWID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| TIMES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br />----------------------------------------------------------------<br /><br />Note<br />-----<br />- SQL plan baseline &quot;SYS_SQL_PLAN_fcc170b0a62d0f4d&quot; used for this statement<br /><br />22 rows selected.</p> 
+    <p><br /></p></span><span style="font-family: 'courier new'; font-size: 90%;"></span> 
+  <p>
+
+The note at the bottom tells you that the optimizer used an accepted plan.<br />
+
+A plan history might have multiple plans.  You can see one of the accepted plans if the optimizer selects it for execution.  But what if you want to display some or all of the other plans?  You can do this using the <span style="font-family: 'courier new';">display_sql_plan_baseline</span> function in the <span style="font-family: 'courier new';">DBMS_XPLAN</span> package.  Using the above example, here's how you can display the plan for all plans in the plan history.<br /> <span style="font-family: 'courier new'; font-size: 90%;"></span></p><span style="font-family: 'courier new'; font-size: 90%;">SQL&gt; select *<br />&nbsp; 2&nbsp; from table(dbms_xplan.display_sql_plan_baseline(<br />&nbsp; 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sql_handle =&gt; 'SYS_SQL_4bf04d85fcc170b0', format =&gt; 'basic'));</span><span style="font-family: 'courier new'; font-size: 90%;"><br /><br />PLAN_TABLE_OUTPUT<br />--------------------------------------------------------------------------------<br /><br />--------------------------------------------------------------------------------<br />SQL handle: SYS_SQL_4bf04d85fcc170b0<br />SQL text: select p.prod_name, s.amount_sold, t.calendar_year from sales s,<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; products p, times t where s.prod_id = p.prod_id&nbsp;&nbsp; and s.time_id =<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; t.time_id&nbsp;&nbsp; and p.prod_id &lt; :pid<br />--------------------------------------------------------------------------------<br /><br />--------------------------------------------------------------------------------<br />Plan name: SYS_SQL_PLAN_fcc170b0888547d3<br />Enabled: YES &nbsp;&nbsp;&nbsp; Fixed: NO &nbsp;&nbsp;&nbsp;&nbsp; Accepted: YES &nbsp;&nbsp;&nbsp; Origin: MANUAL-LOAD<br />--------------------------------------------------------------------------------<br /><br />Plan hash value: 2290436051<br /><br />---------------------------------------------------------------<br />| Id&nbsp; | Operation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />---------------------------------------------------------------<br />| &nbsp; 0 | SELECT STATEMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 1 |&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 2 |&nbsp;&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 3 |&nbsp;&nbsp;&nbsp; TABLE ACCESS FULL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | TIMES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 4 |&nbsp;&nbsp;&nbsp; PARTITION RANGE ALL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 5 |&nbsp;&nbsp;&nbsp;&nbsp; TABLE ACCESS BY LOCAL INDEX ROWID| SALES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 6 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP CONVERSION TO ROWIDS&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 7 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SALES_PROD_BIX |<br />| &nbsp; 8 |&nbsp;&nbsp; TABLE ACCESS BY INDEX ROWID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | PRODUCTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />| &nbsp; 9 |&nbsp;&nbsp;&nbsp; INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | PRODUCTS_PK&nbsp;&nbsp;&nbsp; |<br />---------------------------------------------------------------<br /><br />--------------------------------------------------------------------------------<br />Plan name: SYS_SQL_PLAN_fcc170b08cbcb825<br />Enabled: YES&nbsp;&nbsp;&nbsp;&nbsp; Fixed: NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Accepted: YES&nbsp;&nbsp;&nbsp;&nbsp; Origin: AUTO-CAPTURE<br />--------------------------------------------------------------------------------<br /><br />Plan hash value: 2361178149<br /><br />------------------------------------------<br />| Id&nbsp; | Operation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Name&nbsp;&nbsp;&nbsp;&nbsp; |<br />------------------------------------------<br />|&nbsp;&nbsp; 0 | SELECT STATEMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 1 |&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 2 |&nbsp;&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 3 |&nbsp;&nbsp;&nbsp; PARTITION RANGE ALL| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 4 |&nbsp;&nbsp;&nbsp;&nbsp; TABLE ACCESS FULL | SALES&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 5 |&nbsp;&nbsp;&nbsp; TABLE ACCESS FULL&nbsp; | TIMES&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 6 |&nbsp;&nbsp; TABLE ACCESS FULL&nbsp;&nbsp; | PRODUCTS |<br />------------------------------------------<br /><br />--------------------------------------------------------------------------------<br />Plan name: SYS_SQL_PLAN_fcc170b0a62d0f4d<br />Enabled: YES&nbsp;&nbsp;&nbsp;&nbsp; Fixed: NO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Accepted: YES&nbsp;&nbsp;&nbsp;&nbsp; Origin: AUTO-CAPTURE<br />--------------------------------------------------------------------------------<br /><br />Plan hash value: 2787970893<br /><br />----------------------------------------------------------------<br />| Id&nbsp; | Operation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />----------------------------------------------------------------<br />|&nbsp;&nbsp; 0 | SELECT STATEMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 1 |&nbsp; NESTED LOOPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 2 |&nbsp;&nbsp; NESTED LOOPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 3 |&nbsp;&nbsp;&nbsp; HASH JOIN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 4 |&nbsp;&nbsp;&nbsp;&nbsp; TABLE ACCESS BY INDEX ROWID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | PRODUCTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 5 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | PRODUCTS_PK&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 6 |&nbsp;&nbsp;&nbsp;&nbsp; PARTITION RANGE ALL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 7 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TABLE ACCESS BY LOCAL INDEX ROWID| SALES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 8 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP CONVERSION TO ROWIDS&nbsp;&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp;&nbsp; 9 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; BITMAP INDEX RANGE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | SALES_PROD_BIX |<br />|&nbsp; 10 |&nbsp;&nbsp;&nbsp; INDEX UNIQUE SCAN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | TIME_PK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />|&nbsp; 11 |&nbsp;&nbsp; TABLE ACCESS BY INDEX ROWID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | TIMES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<br />----------------------------------------------------------------<br /><br />72 rows selected</span><span style="font-family: 'courier new'; font-size: 90%;">.</span> <br /><br /> 
+  <h2>Parameters</h2>
+
+Two parameters allow you to control SPM.  The first, <span style="font-family: 'courier new';">optimizer_capture_sql_plan_baselines</span>, which is FALSE by default, allows you to automatically capture plans.  SPM will start managing every repeatable SQL statement that is executed and will create a plan history for it.  The first plan that is captured will beautomatically accepted.  Subsequent plans for these statements will not be accepted until they are evolved. <br /> <br />The second parameter, <span style="font-family: 'courier new';">optimizer_use_sql_plan_baselines</span>, is TRUE by default.  It allows the SPM aware optimizer to use the SQL plan baseline if available when compiling a SQL statement.  If you set this parameter to FALSE, the SPM aware optimizer will be disabled and you will get the regular cost-based optimizer which will select the best plan based on estimated cost. <br /><br /> 
+  <h2>SPM and SQL profiles</h2>
+
+A SQL statement can have both a SQL profile and a SQL plan baseline.  Such a case was described in Part 3 where we evolved a SQL plan baseline by accepting a SQL profile.  In this case, the SPM aware optimizer will use both the SQL profile and the SQL plan baseline.  The SQL profile contains additional information that helps the optimizer to accurately cost each accepted plan and select the best one.  The SPM aware optimizer may choose a different accepted plan when a SQL profile is present than when it is not.<br /> <br /> 
+  <h3>SPM and stored outlines</h3>
+
+It is possible for a SQL statement to have a stored outline as well as a SQL plan baseline.  If a stored outline exists for a SQL statement and is enabled for use, then the optimizer will use it, ignoring the SQL plan baseline.  In other words, the stored outline trumps a SQL plan baseline. If you are using stored outlines, you can test SPM by creating SQL plan baselines and disabling the stored outlines.  If you are satisfied with SPM, you can either drop the stored outlines or leave them disabled.  If SPM doesn't work for you (and we would love to know why), you can re-enable the stored outlines.<br /> <br />
+If you are using stored outlines, be aware of their limitations:
+
+
+  
+  
+  
+  <ul> 
+    <li>You can only have one stored outline at a time for a given SQL statement.  This may be fine in some cases, but a single plan is not necessarily the best when the statement is executed under varying conditions (e.g., bind values).
+</li> 
+    <li>The second limitation is related to the first.  Stored outlines do not allow for evolution.  That is, even if a better plan exists, the stored outline will continue to be used, potentially degrading your system's performance.  To get the better plan, you have to manually drop the current stored outline and generate a new one.
+</li> 
+    <li>If an access path (e.g., an index) used in a stored outline is dropped or otherwise becomes unusable, the partial stored outline will continue to be used with the potential of a much worse plan.
+</li> 
+  </ul>
+
+One question that readers have is what we plan to do with the stored outlines feature.  Here is the official word in Chapter 20 of Oracle's Performance Tuning Guide:
+<br /> 
+  <blockquote><br />Stored outlines will be desupported in a future release in favor of SQL plan management. In Oracle Database 11g Release 1 (11.1), stored outlines continue to function as in past releases. However, Oracle strongly recommends that you use SQL plan management for new applications. SQL plan management creates SQL plan baselines, which offer superior SQL performance and stability compared with stored outlines.<br /> <br />
+If you have existing stored outlines, consider migrating them to SQL plan baselines by using the <span style="font-family: 'courier new';">LOAD_PLANS_FROM_CURSOR_CACHE</span> or <span style="font-family: 'courier new';">LOAD_PLANS_FROM_SQLSET</span> procedure of the <span style="font-family: 'courier new';">DBMS_SPM</span> package. When the migration is complete, you should disable or remove the stored outlines.</blockquote> <br /> 
+  <h3>SPM and adaptive cursor sharing</h3> <a href="https://blogs.oracle.com/optimizer/entry/why_are_there_more_cursors_in_11g_for_my_query_containing_bind_variables_1">Adaptive cursor sharing</a> (ACS) may generate multiple cursors for a given bind sensitive SQL statement if it is determined that a single plan is not optimal under all conditions.  Each cursor is generated by forcing a hard parse of the statement.  The optimizer will normally select the plan with the best cost upon each hard parse.
+<br /> <br />When you have a SQL plan baseline for a statement, the SPM aware optimizer will select the best accepted plan as the optimal plan.  This also applies for the hard parse of a bind sensitive statement.  There may be multiple accepted plans, each of which is optimal for different bind sets.  With SPM and ACS enabled, the SPM aware optimizer will select the best plan for the current bind set.
+<br />
+Thus, if a hard parse occurs, the normal SPM plan selection algorithm is used regardless of whether a statement is bind sensitive. 
+<br /> 
+  <h3>Enterprise Manager</h3>
+
+You can view SQL plan baselines and configure and manage most SPM tasks through the Enterprise Manager.  The screenshots below show two of these tasks.
+<br /> 
+  <blockquote><span style="font-weight: bold;">Setting init.ora parameters for SPM</span></blockquote> <br /> <a href="http://2.bp.blogspot.com/_glIIj2YN9FU/SYJQViFHYcI/AAAAAAAAACs/RKUoemeQvs0/s1600-h/spm_set_initora.GIF" onblur="try {parent.deselectBloggerImageGracefully();} catch(e) {}"><img border="0" id="BLOGGER_PHOTO_ID_5296884442596860354" src="http://2.bp.blogspot.com/_glIIj2YN9FU/SYJQViFHYcI/AAAAAAAAACs/RKUoemeQvs0/s400/spm_set_initora.GIF" style="margin: 0px auto 10px; display: block; text-align: center; cursor: pointer; width: 400px; height: 242px;" /></a> <br /> 
+  <blockquote><span style="font-weight: bold;">Loading SQL plan baselines from cursor cache</span></blockquote> <br /> <a href="http://2.bp.blogspot.com/_glIIj2YN9FU/SYJQdNUJi3I/AAAAAAAAAC0/aYoIcIb6ad4/s1600-h/SPM_Loading+from_cursor_cache.bmp" onblur="try {parent.deselectBloggerImageGracefully();} catch(e) {}"><img border="0" id="BLOGGER_PHOTO_ID_5296884574461725554" src="http://2.bp.blogspot.com/_glIIj2YN9FU/SYJQdNUJi3I/AAAAAAAAAC0/aYoIcIb6ad4/s400/SPM_Loading+from_cursor_cache.bmp" style="margin: 0px auto 10px; display: block; text-align: center; cursor: pointer; width: 400px; height: 249px;" /></a> <br /> 
+  <h3>Further Reading</h3>
+
+More details about SPM are available in the Oracle documentation, especially Chapter 15 of the Performance Tuning Guide.  There is also an Oracle White<a href="http://www.oracle.com/technetwork/database/features/bi-datawarehousing/twp-sql-plan-management-11gr2-133099.pdf">paper</a>&nbsp; that show how SPM prevents performance regressions while simultaneously allowing better plans to be used.
+
+
+  <p><a href="https://plus.google.com/115225673827938473361?rel=author" rel="author">Maria Colgan+</a></p>
+        
+    </div>
+
+    <div class="entry-footer">
+        <p class="entry-category">Category: SQL Plan Management</p>
+        <p class="entry-tags">Tags:    
+    	    <a href="https://blogs.oracle.com/optimizer/tags/sql_plan_management" rel="tag">sql_plan_management</a> 
+    
+ </p>
+        <p class="entry-links">
+        <a href="https://blogs.oracle.com/optimizer/entry/sql_plan_management_part_4_of_4_user_interfaces_and_other_features">Permanent link to this entry</a>
+                        </p>
+    </div>
+
+	    
+	</div>
+
+</div>    
+    
+          
+                    <!-- Previous and Next Entries -->
+                    <div id="pagerBottom">
+                                                    &laquo; <a href="https://blogs.oracle.com/optimizer/entry/sql_plan_management_part_3_of_4_evolving_sql_plan_baselines_1">SQL Plan Management...</a> |  
+                <a href="/optimizer/">Main</a>
+                | <a href="https://blogs.oracle.com/optimizer/entry/maintaining_statistics_on_large_partitioned_tables">Maintaining statisti...</a> &raquo;
+                        </div> 
+                    
+                    <!-- Comments -->
+                                                <a name="comments"></a>
+    <div class="comments" id="comments">
+
+            <div class="comments-head">Comments:</div>
+            
+    <br/>
+        </div>
+                        
+    <div class="comments-form">
+    <div class="comments-head">Post a Comment:</div>
+    <a name="comment-form"></a>
+
+
+    
+    <form method="post" action="https://blogs.oracle.com/optimizer/entry/sql_plan_management_part_4_of_4_user_interfaces_and_other_features" focus="name" 
+        name="commentForm" onsubmit="fixURL(this); return validateComments(this)">    
+        <input type="hidden" name="method" value="post" />
+
+        <ul>
+            <li>
+                <label class="desc">Name:</label>
+                <input type="text" name="name" class="text large" value="" size="50" maxlength="255" />
+            </li>
+
+            <li><label class="desc">E-Mail:</label>
+                <input type="text" name="email" class="text large" value="" size="50" maxlength="255" />
+            </li>
+
+            <li><label class="desc">URL:</label>
+                <input type="text" name="url" class="text large" value="" size="50" maxlength="255" />
+            </li>
+
+                    <li><input type="checkbox" class="checkbox" id="notify" name="notify" />
+                <label for="notify" class="choice">Notify me by email of new comments</label>
+            </li>
+                    <li>
+                <input type="checkbox" class="checkbox" id="rememberInfo" name="rememberInfo" />
+                <label for="rememberInfo" class="choice">Remember Information?</label>
+            </li>
+            <li>
+                <label class="desc">Your Comment:</label>
+             
+            <textarea name="content" class="textarea large" cols="40" rows="10"></textarea>
+
+            </li>
+            <li class="info">
+                <span class="comments-syntax-indicator">
+                HTML Syntax:
+                                    <span class="disabled">NOT allowed</span>
+                                </span>
+            </li>
+            <li class="info">
+               <script type="text/javascript" src="/theme/scripts/clientSideInclude.js"></script>
+               <div id="commentAuthenticator"></div>
+            </li>
+            <li>
+               <input type="button" class="button" name="post" value="&nbsp;Preview&nbsp;"
+                  onclick="this.form.method.value='preview';this.form.submit()" />
+               <input type="submit" class="button" name="post" value="&nbsp;Post&nbsp;" />
+            </li>
+        </ul>
+
+    </form>
+
+    <script type="text/javascript" src="/theme/scripts/roller.js"></script>
+    <script type="text/javascript">
+    clientSideInclude('commentAuthenticator', '/CommentAuthenticatorServlet');
+
+    var author = getCookie("commentAuthor");
+    var email = getCookie("commentEmail");
+    var url = getCookie("commentUrl");
+    // check each field - IE will render "null"
+   
+    if (author) {
+        document.forms['commentForm'].name.value = author;
+    }else{
+        document.forms['commentForm'].name.value = "guest";
+    }
+
+    if (email) {
+        document.forms['commentForm'].email.value = email;
+    }
+    if (url) {
+        document.forms['commentForm'].url.value = url;
+    }
+
+    if (author || email || url) {
+        document.forms['commentForm'].rememberInfo.checked = true;
+    }
+
+    function fixURL(theForm) {
+        if (theForm.url.value != "" &&
+            theForm.url.value.indexOf("http://") == -1) { //prepend http://
+            theForm.url.value = "http://"+theForm.url.value;
+        }
+        saveUserInformation(theForm);
+    }
+
+    function saveUserInformation(theForm) {
+        if (theForm.rememberInfo.checked) {
+            rememberUser(theForm);
+        } else {
+            forgetUser(theForm);
+        }
+    }
+
+    function validateComments(theForm) {
+        if (theForm.content.value == "") {
+            alert("Please enter a comment.");
+            theForm.content.focus();
+            return false;
+        }
+ 
+        if (document.forms['commentForm'].name.value=="" ) {
+        document.forms['commentForm'].name.value = "guest";
+        }
+
+    }
+    </script>
+
+
+    </div>
+                    				</div>
+
+                <!-- Sidebar -->
+                           <!-- Right Sidebar -->
+<div id="rightColumn">
+
+<!-- About -->
+  <div id="aboutSection">    
+    <h5 class="section-title">About</h5>
+    <div class="section-body">
+                  <p>The Oracle Optimizer blog is written by members of the Optimizer development team. The goal of this blog is to provide an insight into the workings of the Optimizer and the statistics it relies on. The views expressed on this blog are our own and do not necessarily reflect the views of Oracle and its affiliates. The views and opinions expressed by visitors on this blog are theirs solely and may not reflect ours.</p>
+            </div>
+  </div>  
+<!-- End About -->
+
+<!-- Search -->
+
+<div id="searchSection">  
+    <h5 class="section-title">Search</h5>
+    <div class="section-body">
+        <script type="text/javascript">
+    function prepareSearchForm() {
+        document.getElementById("searchForm").searchQuery.name = "Ntt";
+    }
+    function submitSearchForm() {
+        var form = document.getElementById("searchForm");
+        var query = form.searchQuery.value; //Ntt
+        var urlGroup = form.searchGroup.value; //cat
+        var ntk = form.ntk.value; //Ntk
+         
+        if (query == null || query == "") {
+            return false;
+        }
+        var curUrl = window.location.href;        
+        form.searchFilteredQuery.value = form.searchQuery.value;
+
+        						 form.action="https://www.oracle.com/search/results";
+				
+        window.location = form.action + "?cat=" + urlGroup + "&Ntk=" + ntk +"&Ntt=" + form.searchFilteredQuery.value;  
+        return false;
+    }
+</script>
+<form id="searchForm" action="https://www.oracle.com/search/results"
+      onsubmit="return submitSearchForm();" method="get">
+    <input type="hidden" id="searchGroup" name="cat" value="blogs" />
+    <input type="hidden" id="ntk" name="Ntk" value="S3">
+    <p>
+    <label for="searchQuery" title="Enter search term">Enter search term:</label>
+    <br />
+    <input id="searchQuery" name="Ntt" class="text" alt="Enter Search Term" type="text">
+    <input type="image" class="input-image" id="searchSubmit" alt="Submit Search" title="Submit Search" src="https://blogs.oracle.com/optimizer/resource/search-button.gif" />
+</form>
+<script type="text/javascript">prepareSearchForm();</script>
+    </div>
+  </div>  
+<!-- End Search -->
+
+
+<!-- Recent Posts -->
+  <div id="recentSection">  
+                <h5 class="section-title">Recent Posts</h5>
+        <div class="section-body">
+            <ul>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/new_sql_plan_management_white">New SQL Plan Management White Paper</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/efficient_statistics_maintenance_for_partitioned1">Efficient Statistics Maintenance for Partitioned Tables Using Incremental Statistics – Part 2</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/efficient_statistics_maintenance_for_partitioned">Efficient Statistics Maintenance for Partitioned Tables Using Incremental Statistics – Part 1</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/new_oracle_optimizer_white_paper">New Oracle Optimizer White Paper</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/optimizer_adaptive_features_in_the">Optimizer Adaptive Features in the Exadata Express Cloud Service</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/oow_2016_update">OOW 2016 Update</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/oow2016">Oracle OpenWorld 2016</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/setting_a_session_parameter_overrides">Setting a Session Parameter Overrides OFE</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/gtts_and_upgrading_to_oracle">Global Temporary Tables and Upgrading to Oracle Database 12c - Don't Get Caught Out</a></li>
+                                    <li><a href="https://blogs.oracle.com/optimizer/entry/optimizer_feature_differences_for_oracle">Optimizer Feature Differences Between Oracle Database Releases</a></li>
+                            </ul>
+        </div>
+      </div>    
+<!-- End Recent Posts -->
+
+
+<!-- Top Tags -->
+  <div id="tagsSection">  
+            <h5 class="section-title">Top Tags</h5>
+    <div class="tags section-body">
+        <ul class="tag-cloud">
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/11g" title="1" class="weight-1">11g</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/12c" title="15" class="weight-5">12c</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/cardinality_feedback" title="1" class="weight-1">cardinality_feedback</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/cursor_sharing" title="8" class="weight-4">cursor_sharing</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/database" title="8" class="weight-4">database</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/diagnosability_tools" title="4" class="weight-2">diagnosability_tools</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/events" title="11" class="weight-4">events</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/exadata_express" title="1" class="weight-1">exadata_express</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/execution_plans" title="3" class="weight-2">execution_plans</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/global_temporary_tables" title="1" class="weight-1">global_temporary_tables</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/gtt" title="1" class="weight-1">gtt</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/hints" title="6" class="weight-3">hints</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/how_do_i" title="15" class="weight-5">how_do_i</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/in-memory" title="2" class="weight-1">in-memory</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/incremental_statistics" title="1" class="weight-1">incremental_statistics</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/management" title="1" class="weight-1">management</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/oow" title="2" class="weight-1">oow</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/oow2009" title="1" class="weight-1">oow2009</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/oow2010" title="1" class="weight-1">oow2010</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/oow2011" title="8" class="weight-4">oow2011</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/oow2012" title="11" class="weight-4">oow2012</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/oow2013" title="5" class="weight-3">oow2013</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/openworld" title="3" class="weight-2">openworld</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/optimizer" title="20" class="weight-5">optimizer</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/optimizer_tranformations" title="1" class="weight-1">optimizer_tranformations</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/optimizer_transformations" title="9" class="weight-4">optimizer_transformations</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/peformance" title="1" class="weight-1">peformance</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/performance" title="8" class="weight-4">performance</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/query_optimization" title="2" class="weight-1">query_optimization</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/space" title="1" class="weight-1">space</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/sql_patches" title="2" class="weight-1">sql_patches</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/sql_plan_management" title="18" class="weight-5">sql_plan_management</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/statistics" title="21" class="weight-5">statistics</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/technical_papers" title="5" class="weight-3">technical_papers</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/upgrade" title="3" class="weight-2">upgrade</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/tags/upgrading" title="1" class="weight-1">upgrading</a></li>
+                </ul>
+    </div>
+    </div>    
+<!-- End Top Tags -->
+    
+
+<!-- Categories -->
+  <div id="categoriesSection">
+    <h5 class="section-title">Categories</h5>
+    <div class="section-body">
+                        <ul class="rCategory">
+                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/12c">12c</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Cursor+Sharing">Cursor Sharing</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Diagnostic+tools">Diagnostic tools</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/How+do+I">How do I</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Oracle">Oracle</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Oracle+OpenWorld">Oracle OpenWorld</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Oracle+Optimizer">Oracle Optimizer</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/SQL+Plan+Management">SQL Plan Management</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Statistics">Statistics</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Transformations">Transformations</a></li>
+                                                                                                            <li><a href="https://blogs.oracle.com/optimizer/category/Upcoming+events">Upcoming events</a></li>
+                                                                            </ul>
+        </div>
+  </div>
+<!-- End Categories -->
+
+
+<!-- Archives -->
+   <div id="archiveSection">
+    <h5 class="section-title">Archives</h5>
+    <div class="section-body">
+        <table cellspacing="0" border="0"  summary="Blog Archive Calendar" class="hCalendarTable"><tr><td colspan="7" align="center" class="hCalendarMonthYearRow"><a href="/optimizer/date/201701" title="Prev" class="hCalendarNavBar">&laquo;</a> February 2017</td></tr><tr><th class="hCalendarDayNameRow" align="center">Sun</th><th class="hCalendarDayNameRow" align="center">Mon</th><th class="hCalendarDayNameRow" align="center">Tue</th><th class="hCalendarDayNameRow" align="center">Wed</th><th class="hCalendarDayNameRow" align="center">Thu</th><th class="hCalendarDayNameRow" align="center">Fri</th><th class="hCalendarDayNameRow" align="center">Sat</th></tr><tr><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDay"><div class="hCalendarDayTitle">1</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">2</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">3</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">4</div></td></tr><tr><td class="hCalendarDay"><div class="hCalendarDayTitle">5</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">6</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">7</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">8</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">9</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">10</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">11</div></td></tr><tr><td class="hCalendarDay"><div class="hCalendarDayTitle">12</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">13</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">14</div></td><td class="hCalendarDayCurrent"><div class="hCalendarDayTitle">15</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">16</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">17</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">18</div></td></tr><tr><td class="hCalendarDay"><div class="hCalendarDayTitle">19</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">20</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">21</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">22</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">23</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">24</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">25</div></td></tr><tr><td class="hCalendarDay"><div class="hCalendarDayTitle">26</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">27</div></td><td class="hCalendarDay"><div class="hCalendarDayTitle">28</div></td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td></tr><tr><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td><td class="hCalendarDayNotInMonth">&nbsp;</td></tr><tr class="hCalendarNextPrev"><td colspan="7" align="center"><a href="/optimizer/" class="hCalendarNavBar">Today</a></td></tr></table>
+    </div>
+  </div>
+<!-- End Archives -->
+
+<!-- Bookmarks -->
+   <div id="bookmarkSection">
+                <h5 class="section-title">Bookmarks</h5>
+        <div class="section-body">
+            <ul class="rFolder">
+                    <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/focus-areas/bi-datawarehousing/dbbi-tech-info-optmztn-092214.html"
+               title="This is the home page for the Optimizer on OTN"
+               class="rBookmark0">Oracle Optimizer on OTN</a>
+                </li>
+                    </ul>
+        </div>
+                <h5 class="section-title">Optimizer White papers</h5>
+        <div class="section-body">
+                    <ul class="rFolder">
+                    <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/bi-datawarehousing/twp-bp-optimizer-stats-04042012-1577139.pdf"
+               title="This paper outlines the best practices for gathering optimizer statistics "
+               class="rBookmark0">Best Practices For Gathering Optimizer Statistics In Oracle Database 11g - Part2</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/bi-datawarehousing/twp-sql-plan-mgmt-12c-1963237.pdf"
+               title="This whitepaper explains in detail how SQL Plan Management works and how it has been enhanced in Oracle Database 12c"
+               class="rBookmark0">SQL Plan Management in Oracle Database 12c</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/bi-datawarehousing/twp-statistics-concepts-12c-1963871.pdf"
+               title="This whitepaper explains in detail, with the use of real-world examples, the fundamental concepts of statistics and statistics gathering techniques."
+               class="rBookmark0">Understanding Optimizer Statistics in Oracle Database 12c</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/bi-datawarehousing/twp-optimizer-with-oracledb-12c-1963236.pdf"
+               title="This whitepaper describes in details the new optimizer and statistics features and enhancements in Oracle Database 12c"
+               class="rBookmark0">Upgrading from 11g to 12c: What to expect from the Optimizer</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/bi-datawarehousing/twp-bp-for-stats-gather-12c-1967354.pdf"
+               title="This is part 2 of our series on Optimizer Statistics. It explains in details the best practices for gathering Optimizer Statistics and points out the areas where you should pay extra attention when gathering statistics."
+               class="rBookmark0">Best Practices For Gathering Optimizer Statistics In Oracle Database 12 - Part2</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/focus-areas/bi-datawarehousing/twp-sql-plan-management-11gr2-133099.pdf"
+               title="Understanding SQL Plan Management in Oracle Database 11g."
+               class="rBookmark0">SQL Plan Management in Oracle Database 11g</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.google.com/url?sa=t&rct=j&q=understanding%20optimizer%20statistics&source=web&cd=2&ved=0CDEQFjAB&url=http%3A%2F%2Fwww.oracle.com%2Focom%2Fgroups%2Fpublic%2F%40otn%2Fdocuments%2Fwebcontent%2F1354477.pdf&ei=-FFdT9zhLeWU2QWY3ZWIDw&usg=AFQjCNGwaegm"
+               title="This is part 1 of a two part series on managing Optimizer Statistics. This paper covers the concepts of statistics."
+               class="rBookmark0">Understanding Optimizer Statistics in Oracle Database 11g</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/focus-areas/bi-datawarehousing/twp-upgrading-10g-to-11g-what-to-ex-133707.pdf"
+               title="After upgrading to Oracle Database 11g you will automatically start using the new 11g Optimizer. This paper explains what new features and behaviors you should expect."
+               class="rBookmark0">Upgrading from 10g to 11g: What to expect from the Optimizer</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/focus-areas/bi-datawarehousing/twp-explain-the-explain-plan-052011-393674.pdf"
+               title="This paper explains in detail each aspect of the execution plan from the cardinality through to parallel execution."
+               class="rBookmark0">Explain the Explain Plan</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.oracle.com/technetwork/database/focus-areas/bi-datawarehousing/twp-bidw-optimizer-10gr2-0208-130973.pdf"
+               title="This paper outlines in detail what to expect from the 10g Optimizer. "
+               class="rBookmark0">Upgrading from 9i to 10g: What to expect from the Optimizer</a>
+                </li>
+                    </ul>
+                </div>
+            <h5 class="section-title">Optimizer Development Technical Papers</h5>
+        <div class="section-body">
+                    <ul class="rFolder">
+                    <li class="rFolderItem">
+                                <a href="http://www.vldb.org/pvldb/1/1454178.pdf"
+               title="This paper discusses adaptive cursor sharing and cardinality feedback, plus the general concept of using feedback from execution to improve plan selection."
+               class="rBookmark0">Closing the Query Processing Loop in Oracle 11g </a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://dl.acm.org/citation.cfm?id=1164215"
+               title="Query Transformation in Oracle. VLDB 2006: 1026-1036
+This paper talks about many of the query transformations in Oracle 11g"
+               class="rBookmark0">Cost-Based Query Transformation in Oracle</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://portal.acm.org/citation.cfm?id=1376721"
+               title="This paper discusses two major improvements to statistics gathering in 11g -- approximate NDV and incremental statistics gathering."
+               class="rBookmark0">Efficient and scalable statistics gathering for large databases in Oracle 11g</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.vldb.org/pvldb/2/vldb09-423.pdf"
+               title="This paper talks about several of the newer subquery optimizations in Oracle inlcuding, basic subquery unnesting and other subquery transformations.  It also talks about a new form of join elimination which we introduced in 11gR2."
+               class="rBookmark0">Enhanced Subquery Optimizations in Oracle, VLDB 2009</a>
+                </li>
+            <li class="rFolderItem">
+                                <a href="http://www.vldb.org/pvldb/1/1454175.pdf"
+               title="This paper describes SQL plan management, which we discussed on our blog in a four-part SPM series.  The paper gives a bit more detail about the internals of SPM, plus analyzes the behavior of SPM on a large query workload from Oracle E-Business Suite."
+               class="rBookmark0">Optimizer plan change management: improved stability and performance in Oracle 11g</a>
+                </li>
+                    </ul>
+                </div>
+      </div>    
+<!-- End Bookmarks -->
+
+<!-- Blog and Author Menu -->
+   <div id="menuSection">
+    <h5 class="section-title">Menu</h5>
+    <div class="section-body">
+            <ul class="rNavigationBar">
+        <li class="rNavItem">
+            <a href="/"><span>Blogs Home</span></a>
+        </li>
+        <li class="rNavItem">
+            <a href="https://blogs.oracle.com/optimizer/"><span>Weblog</span></a>
+        </li>
+                                                                                                                            <li class="rNavItem">
+                    <a href="/roller-ui/login-redirect.rol"><span>Login</span></a>
+                </li>
+                        </ul>
+            </div>
+  </div>    
+<!-- End Blog and Author Menu -->
+
+    
+<!-- Feeds -->
+   <div id="feedsSection">   
+    <h5 class="section-title">Feeds</h5>
+    <div class="section-body">
+        <b>RSS</b>
+            <ul class="rFeeds">
+    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss">All</a></li>
+                        <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2F12c">/12c</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FCursor+Sharing">/Cursor Sharing</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FDiagnostic+tools">/Diagnostic tools</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FHow+do+I">/How do I</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FOracle">/Oracle</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FOracle+OpenWorld">/Oracle OpenWorld</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FOracle+Optimizer">/Oracle Optimizer</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FSQL+Plan+Management">/SQL Plan Management</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FStatistics">/Statistics</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FTransformations">/Transformations</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/rss?cat=%2FUpcoming+events">/Upcoming events</a></li>
+        <li><a href="https://blogs.oracle.com/optimizer/feed/comments/rss">Comments</a></li>
+    </ul>
+        <b>Atom</b>    
+            <ul class="rFeeds">
+    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom">All</a></li>
+                        <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2F12c">/12c</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FCursor+Sharing">/Cursor Sharing</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FDiagnostic+tools">/Diagnostic tools</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FHow+do+I">/How do I</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FOracle">/Oracle</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FOracle+OpenWorld">/Oracle OpenWorld</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FOracle+Optimizer">/Oracle Optimizer</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FSQL+Plan+Management">/SQL Plan Management</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FStatistics">/Statistics</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FTransformations">/Transformations</a></li>
+                    <li><a href="https://blogs.oracle.com/optimizer/feed/entries/atom?cat=%2FUpcoming+events">/Upcoming events</a></li>
+        <li><a href="https://blogs.oracle.com/optimizer/feed/comments/atom">Comments</a></li>
+    </ul>
+    </div>
+  </div>          
+<!-- End Feeds -->    
+    
+</div>    			</div>
+
+			<!-- Footer -->
+			<div id="footer">
+				<p>The views expressed on this blog are those of the author and do not necessarily reflect the views of Oracle. <a href="http://www.oracle.com/html/terms.html">Terms of Use</a> | <a href="http://www.oracle.com/html/privacy.html">Your Privacy Rights</a> | <span id='teconsent'><script type='text/javascript' src='https://consent.truste.com/notice?domain=oracle.com&c=teconsent&language=en&text=true'></script>   </span>  </p>
+			</div>
+			<!-- Omniture Script --> 
+<!-- Start SiteCatalyst code -->
+
+<script language="JavaScript" src="/main/resource/resources/ora_blogs.js"></script>
+
+<!-- End SiteCatalyst code -->
+		</div>
+	</body>
+</html>

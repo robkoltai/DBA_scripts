@@ -1,0 +1,724 @@
+http://refermefororacle.blogspot.hu/2015/10/cross-platform-backup-and-restore-in-12c.html
+
+https://docs.oracle.com/database/121/BRADV/rcmxplat.htm#BRADV725
+https://docs.oracle.com/database/121/RCMRF/rcmsynta2008.htm#RCMRF149
+
+https://www.pythian.com/blog/howto-oracle-cross-platform-migration-with-minimal-downtime/
+
+Cross-Platform Backup and Restore in 12c
+Cross-Platform Backup and Restore Improvements
+
+RMAN enables you to transport databases, datafiles and tablespaces across platforms.  This includes transporting tablespaces across platforms with different endian formats. Prior to 12c, all cross-platofm data transport required the use of image copies.  In 12c, you can transport data across platforms by using backupsets.  Also, Oracle 12c allows the use of inconsistent backup, that is one created when a tablespace is in READ WRITE.  Prior versions required it to be in READ ONLY.
+
+With the use of backupsets, you can choose compression and multisection options which may reduce the overall transport time.  
+
+When developing a database transport strategy, you need to consider the endian format of the platform and the database open mode.   
+
+For example:
+
+Transport at the database level requires the same endian format (on source and destination) and READ ONLY mode of the source database (which may not be desirable).
+
+Tablespaces and backupsets can be transported across platforms of same OR different endian format while the source database remains online in READ WRITE mode.   
+
+In this case, most of the work is done with the source database available in READ WRITE mode.  One final step (a small incremental backup) is taken with the database in READ ONLY mode.  This is required so that the database can be opened in a consistent state
+
+
+In 12c, rman offers the option following options with the backup command:
+
+FOR TRANSPORT:  
+
+This options creates a backupset which can be transported to any destination. If the destination database uses a different endian format than the source, the endian format conversion is performed on the destination database.
+TO PLATFORM: 
+
+This option results in the endian format conversion to be performed on the source database and must be used by that supported platform only.
+
+DATAPUMP:  This specifies that a data pump export dump file is created while performing a cross-platform backup.  The dump file is created in s separate backup set.
+
+
+
+Scenario - Cross platform - Migrating a database from Linux to Solaris server using rman backup sets.
+
+Source - Linux 5 X86_64
+Target - Solaris 10 x86_64
+Dbname - purchase
+
+
+
+1) Startup the database in read only mode and exec dbms_tds.check_db
+
+
+SQL> shut immediate;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+
+SQL> startup mount;
+ORACLE instance started.
+
+Total System Global Area 1073741824 bytes
+Fixed Size                  2932632 bytes
+Variable Size             973078632 bytes
+Database Buffers           92274688 bytes
+Redo Buffers                5455872 bytes
+Database mounted.
+
+
+
+
+SQL> select PLATFORM_ID, PLATFORM_NAME, ENDIAN_FORMAT from V$DB_TRANSPORTABLE_PLATFORM order by 1;
+
+PLATFORM_ID PLATFORM_NAME                            ENDIAN_FORMAT
+----------- ---------------------------------------- --------------
+          5 HP Tru64 UNIX                            Little
+          7 Microsoft Windows IA (32-bit)            Little
+          8 Microsoft Windows IA (64-bit)            Little
+         10 Linux IA (32-bit)                        Little
+         11 Linux IA (64-bit)                        Little
+         12 Microsoft Windows x86 64-bit             Little
+         13 Linux x86 64-bit                         Little
+         15 HP Open VMS                              Little
+         17 Solaris Operating System (x86)           Little
+         19 HP IA Open VMS                           Little
+         20 Solaris Operating System (x86-64)        Little
+         21 Apple Mac OS (x86-64)                    Little
+
+12 rows selected.
+
+SQL> declare
+     trans boolean;
+     begin
+               trans := dbms_tdb.check_db('Solaris Operating System (x86-64)');
+                        if trans then
+                              dbms_output.put_line ('Transport check to Solaris succeeded');
+                        else
+                               dbms_output.put_line ('Transport check to Solaris failed');
+                      end if;
+    end;
+    /
+
+Transport check to Solaris succeeded
+
+PL/SQL procedure successfully completed.
+
+
+
+2) Now take the backup of the database , you can use either TO PLATFORM or FOR TRANSPORT clause while taking backup.
+
+
+RMAN> configure channel device type disk format '/backup/purchase_bkp/backup_for_mig_%U.bkp';
+RMAN> CONFIGURE DEVICE TYPE DISK PARALLELISM 4 backup type to backupset;
+
+RMAN> backup for transport database;
+
+Starting backup at 11-SEP-15
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=30 device type=DISK
+allocated channel: ORA_DISK_2
+channel ORA_DISK_2: SID=21 device type=DISK
+allocated channel: ORA_DISK_3
+channel ORA_DISK_3: SID=33 device type=DISK
+allocated channel: ORA_DISK_4
+channel ORA_DISK_4: SID=34 device type=DISK
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00004 name=/u01/app/oracle/oradata/purchase/undotbs01.dbf
+input datafile file number=00006 name=/u01/app/oracle/oradata/purchase/users01.dbf
+channel ORA_DISK_1: starting piece 1 at 11-SEP-15
+channel ORA_DISK_2: starting full datafile backup set
+channel ORA_DISK_2: specifying datafile(s) in backup set
+input datafile file number=00001 name=/u01/app/oracle/oradata/purchase/system01.dbf
+input datafile file number=00002 name=/u01/app/oracle/oradata/purchase/active_data01.dbf
+channel ORA_DISK_2: starting piece 1 at 11-SEP-15
+channel ORA_DISK_3: starting full datafile backup set
+channel ORA_DISK_3: specifying datafile(s) in backup set
+input datafile file number=00003 name=/u01/app/oracle/oradata/purchase/sysaux01.dbf
+input datafile file number=00007 name=/u01/app/oracle/oradata/purchase/read_only01.dbf
+channel ORA_DISK_3: starting piece 1 at 11-SEP-15
+channel ORA_DISK_1: finished piece 1 at 11-SEP-15
+piece handle=/backup/purchase_bkp/backup_for_mig_5aqgsgbm_1_1.bkp tag=TAG20150911T092509 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:01:36
+channel ORA_DISK_2: finished piece 1 at 11-SEP-15
+piece handle=/backup/purchase_bkp/backup_for_mig_5bqgsgbm_1_1.bkp tag=TAG20150911T092509 comment=NONE
+channel ORA_DISK_2: backup set complete, elapsed time: 00:01:36
+channel ORA_DISK_3: finished piece 1 at 11-SEP-15
+piece handle=/backup/purchase_bkp/backup_for_mig_5cqgsgbn_1_1.bkp tag=TAG20150911T092509 comment=NONE
+channel ORA_DISK_3: backup set complete, elapsed time: 00:01:35
+Finished backup at 11-SEP-15
+
+
+3) Take the controlfile trace
+
+SQL> alter session set tracefile_identifier = controlfile;
+
+Session altered.
+
+SQL> alter database backup controlfile to trace resetlogs;
+
+Database altered.
+
+[oracle@rhel11gr2rac1 trace]$ cd /oracle/product/diag/rdbms/purchase/purchase/trace
+
+[oracle@rhel11gr2rac1 trace]$ ls -lrt *CONTROL*
+-rw-r----- 1 oracle oinstall   85 Sep 11 09:33 purchase_ora_5083_CONTROLFILE.trm
+-rw-r----- 1 oracle oinstall 4522 Sep 11 09:33 purchase_ora_5083_CONTROLFILE.trc
+
+[oracle@rhel11gr2rac1 trace]$ cp purchase_ora_5083_CONTROLFILE.trc /backup/purchase_bkp/
+
+
+4) Copy the backup and the controlfile trace to the solaris target server.
+
+
+[oracle@rhel11gr2rac1 purchase_bkp]$ scp * oracle@192.168.0.51:/opt/oracle/backup/
+Password:
+backup_for_mig_57qgsg1l_1_1.bkp                                                                                                       100% 1520KB   1.5MB/s   00:00
+backup_for_mig_5aqgsgbm_1_1.bkp                                                                                                       100% 9528KB   9.3MB/s   00:01
+backup_for_mig_5bqgsgbm_1_1.bkp                                                                                                       100%  716MB   8.5MB/s   01:24
+backup_for_mig_5cqgsgbn_1_1.bkp                                                                                                       100%  693MB   8.5MB/s   01:22
+purchase_ora_5083_CONTROLFILE.trc                                                                                                     100% 4522     4.4KB/s   00:00
+
+
+
+
+5) Create the pfile on the target environment. (Modify based on the source pfile)
+
+ Please ensure DB_CREATE_FILE_DEST is set in the init.ora else you would get error
+
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of restore command at 11/09/2015 10:12:45
+RMAN-05088: DB_CREATE_FILE_DEST is not set
+
+db_name='purchase'
+db_create_file_dest='/opt/oracle/oradata/warehdb'
+compatible='12.1.0.0.0'
+control_files='/opt/oracle/oradata/warehdb/control01.ctl','/opt/oracle/oradata/warehdb/control02.ctl'
+db_block_size=8192
+db_domain=''
+db_recovery_file_dest='/opt/oracle/fast_recovery_area'
+db_recovery_file_dest_size=4800m
+diagnostic_dest='/opt/oracle'
+java_pool_size=150M
+log_archive_format='%t_%s_%r.dbf'
+memory_target=1g
+open_cursors=300
+processes=300
+remote_login_passwordfile='EXCLUSIVE'
+shared_pool_size=300M
+undo_tablespace='UNDOTBS1'
+
+
+mkdir -p /opt/oracle/fast_recovery_area
+mkdir -p /opt/oracle/oradata/warehdb
+
+
+
+-bash-3.2$ sqlplus / as sysdba
+
+SQL*Plus: Release 12.1.0.2.0 Production on Fri Sep 11 10:02:54 2015
+
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+
+Connected to an idle instance.
+
+SQL> startup nomount;
+ORACLE instance started.
+
+Total System Global Area 1073741824 bytes
+Fixed Size                  3011888 bytes
+Variable Size             910166736 bytes
+Database Buffers          155189248 bytes
+Redo Buffers                5373952 bytes
+SQL> exit
+
+
+-bash-3.2$ cd /opt/oracle/backup/
+-bash-3.2$ ls -lrt
+total 2909738
+-rw-r-----   1 oracle   oinstall 1556480 Sep 11 09:38 backup_for_mig_57qgsg1l_1_1.bkp
+-rw-r-----   1 oracle   oinstall 9756672 Sep 11 09:38 backup_for_mig_5aqgsgbm_1_1.bkp
+-rw-r-----   1 oracle   oinstall 750821376 Sep 11 09:40 backup_for_mig_5bqgsgbm_1_1.bkp
+-rw-r-----   1 oracle   oinstall 726884352 Sep 11 09:41 backup_for_mig_5cqgsgbn_1_1.bkp
+-rw-r-----   1 oracle   oinstall    4522 Sep 11 09:41 purchase_ora_5083_CONTROLFILE.trc
+
+
+6) Restore the database from backup.
+
+
+
+run
+{
+restore
+from platform 'Linux x86 64-bit'
+foreign database to new
+from backupset '/opt/oracle/backup/backup_for_mig_57qgsg1l_1_1.bkp'
+     backupset '/opt/oracle/backup/backup_for_mig_5aqgsgbm_1_1.bkp'
+     backupset '/opt/oracle/backup/backup_for_mig_5bqgsgbm_1_1.bkp'
+     backupset '/opt/oracle/backup/backup_for_mig_5cqgsgbn_1_1.bkp';
+}
+
+
+Starting restore at 11-SEP-15
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=22 device type=DISK
+
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring all foreign files in backup piece
+channel ORA_DISK_1: reading from backup piece /opt/oracle/backup/backup_for_mig_57qgsg1l_1_1.bkp
+channel ORA_DISK_1: restoring foreign file 4 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_undotbs1_bz4fz8dz_.dbf
+channel ORA_DISK_1: restoring foreign file 6 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_users_bz4fz8f4_.dbf
+channel ORA_DISK_1: foreign piece handle=/opt/oracle/backup/backup_for_mig_57qgsg1l_1_1.bkp
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:01:06
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring all foreign files in backup piece
+channel ORA_DISK_1: reading from backup piece /opt/oracle/backup/backup_for_mig_5aqgsgbm_1_1.bkp
+channel ORA_DISK_1: restoring foreign file 4 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_undotbs1_bz4g1bk0_.dbf
+channel ORA_DISK_1: restoring foreign file 6 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_users_bz4g1blv_.dbf
+channel ORA_DISK_1: foreign piece handle=/opt/oracle/backup/backup_for_mig_5aqgsgbm_1_1.bkp
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:01:06
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring all foreign files in backup piece
+channel ORA_DISK_1: reading from backup piece /opt/oracle/backup/backup_for_mig_5bqgsgbm_1_1.bkp
+channel ORA_DISK_1: restoring foreign file 1 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_system_bz4g3fj6_.dbf
+channel ORA_DISK_1: restoring foreign file 2 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_active_d_bz4g3fj9_.dbf
+channel ORA_DISK_1: foreign piece handle=/opt/oracle/backup/backup_for_mig_5bqgsgbm_1_1.bkp
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:56
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring all foreign files in backup piece
+channel ORA_DISK_1: reading from backup piece /opt/oracle/backup/backup_for_mig_5cqgsgbn_1_1.bkp
+channel ORA_DISK_1: restoring foreign file 3 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_sysaux_bz4g55m8_.dbf
+channel ORA_DISK_1: restoring foreign file 7 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_read_onl_bz4g55o0_.dbf
+channel ORA_DISK_1: foreign piece handle=/opt/oracle/backup/backup_for_mig_5cqgsgbn_1_1.bkp
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:46
+Finished restore at 11-SEP-15
+
+
+-- Now create the controlfile using the trace we have taken from the source db.
+the db is currently in no mount state.
+
+
+### Modify the logfile and datafile as per the target location.
+
+
+
+CREATE CONTROLFILE REUSE DATABASE "PURCHASE" RESETLOGS  ARCHIVELOG
+    MAXLOGFILES 16
+    MAXLOGMEMBERS 3
+    MAXDATAFILES 100
+    MAXINSTANCES 8
+    MAXLOGHISTORY 292
+LOGFILE
+  GROUP 1 '/opt/oracle/oradata/warehdb/PURCHASE/datafile/redo01.log'  SIZE 50M BLOCKSIZE 512,
+  GROUP 2 '/opt/oracle/oradata/warehdb/PURCHASE/datafile/redo02.log'  SIZE 50M BLOCKSIZE 512,
+  GROUP 3 '/opt/oracle/oradata/warehdb/PURCHASE/datafile/redo03.log'  SIZE 50M BLOCKSIZE 512
+-- STANDBY LOGFILE
+DATAFILE
+  '/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_system_bz4g3fj6_.dbf',
+  '/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_active_d_bz4g3fj9_.dbf',
+  '/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_sysaux_bz4g55m8_.dbf',
+  '/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_undotbs1_bz4g1bk0_.dbf',
+  '/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_users_bz4fz8f4_.dbf',
+  '/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_read_onl_bz4g55o0_.dbf'
+CHARACTER SET AL32UTF8
+;
+
+
+
+Control file created.
+
+
+SQL> select status from V$instance;
+
+STATUS
+------------
+MOUNTED
+
+SQL> select name from V$datafile;
+
+NAME
+--------------------------------------------------------------------------------
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_system_bz4g3fj6_.dbf
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_active_d_bz4g3fj9_.dbf
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_sysaux_bz4g55m8_.dbf
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_undotbs1_bz4g1bk0_.dbf
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_users_bz4fz8f4_.dbf
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_read_onl_bz4g55o0_.dbf
+
+6 rows selected.
+
+SQL> select name from V$controlfile;
+
+NAME
+--------------------------------------------------------------------------------
+/opt/oracle/oradata/warehdb/control01.ctl
+/opt/oracle/oradata/warehdb/control02.ctl
+
+SQL> select member from V$logfile;
+
+MEMBER
+--------------------------------------------------------------------------------
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/redo03.log
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/redo02.log
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/redo01.log
+
+
+
+SQL> alter database open resetlogs;
+
+Database altered.
+
+
+Add temp files.
+
+SQL> select name from V$tablespace;
+
+NAME
+------------------------------
+SYSTEM
+ACTIVE_DATA
+SYSAUX
+UNDOTBS1
+USERS
+READ_ONLY_TBLS
+TEMP
+
+7 rows selected.
+
+SQL> alter tablespace temp add tempfile size 100m;
+
+Tablespace altered.
+
+SQL> select name from V$tempfile;
+
+NAME
+--------------------------------------------------------------------------------
+/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_temp_bz4gpnxw_.tmp
+
+
+
+-- Cross platform database migration is completed.
+
+
+
+Cross platform tablespace transport.
+
+Transport a tablespace from Linux x86 64 bit to Solaris x86 64 bit.
+
+
+Source
+------
+
+SQL> select * from V$transportable_platform order by 1;
+
+PLATFORM_ID PLATFORM_NAME                                      ENDIAN_FORMAT      CON_ID
+----------- -------------------------------------------------- -------------- ----------
+          1 Solaris[tm] OE (32-bit)                            Big                     0
+          2 Solaris[tm] OE (64-bit)                            Big                     0
+          3 HP-UX (64-bit)                                     Big                     0
+          4 HP-UX IA (64-bit)                                  Big                     0
+          5 HP Tru64 UNIX                                      Little                  0
+          6 AIX-Based Systems (64-bit)                         Big                     0
+          7 Microsoft Windows IA (32-bit)                      Little                  0
+          8 Microsoft Windows IA (64-bit)                      Little                  0
+          9 IBM zSeries Based Linux                            Big                     0
+         10 Linux IA (32-bit)                                  Little                  0
+         11 Linux IA (64-bit)                                  Little                  0
+         12 Microsoft Windows x86 64-bit                       Little                  0
+         13 Linux x86 64-bit                                   Little                  0
+         15 HP Open VMS                                        Little                  0
+         16 Apple Mac OS                                       Big                     0
+         17 Solaris Operating System (x86)                     Little                  0
+         18 IBM Power Based Linux                              Big                     0
+         19 HP IA Open VMS                                     Little                  0
+         20 Solaris Operating System (x86-64)                  Little                  0
+         21 Apple Mac OS (x86-64)                              Little                  0
+
+20 rows selected.
+
+
+-- both are of same endian format.
+
+SQL> select owner, count(*) from dba_segments where tablespace_name = 'ACTIVE_DATA' group by owner;
+
+OWNER                            COUNT(*)
+------------------------------ ----------
+MANZOOR                                5
+
+
+SQL> select owner, tablespace_name,  count(*) from dba_segments where owner = 'MANZOOR' group by owner, tablespace_name;
+
+OWNER                          TABLESPACE_NAME                  COUNT(*)
+------------------------------ ------------------------------ ----------
+MANZOOR                        ACTIVE_DATA                             5
+MANZOOR                        READ_ONLY_TBLS                          3
+
+SQL> select owner, count(*) from dba_segments where tablespace_name = 'READ_ONLY_TBLS' group by owner;
+
+OWNER                            COUNT(*)
+------------------------------ ----------
+MANZOOR                                 3
+
+
+SQL> select dbms_metadata.get_ddl('USER','MANZOOR') FROM DUAL;
+
+DBMS_METADATA.GET_DDL('USER','MANZOOR')
+--------------------------------------------------------------------------------
+
+CREATE USER "MANZOOR" IDENTIFIED BY VALUES 'S:47916C1085E55EC174043CA9A8536ED8209B16511B0BE5C18B910DB32736;H:DE387266818DAFC68F4448F64892E5F1;A62404A2ED936EE3'
+      DEFAULT TABLESPACE "ACTIVE_DATA"
+      TEMPORARY TABLESPACE "TEMP"
+
+
+
+SQL> EXEC dbms_tts.TRANSPORT_SET_CHECK('ACTIVE_DATA,READ_ONLY_TBLS',TRUE,TRUE);
+
+PL/SQL procedure successfully completed.
+
+
+SQL> SELECT * FROM TRANSPORT_SET_VIOLATIONS;
+
+no rows selected
+
+
+- Transport check passed.
+
+
+
+SQL> alter tablespace ACTIVE_DATA read only;
+
+Tablespace altered.
+
+
+SQL> alter tablespace READ_ONLY_TBLS  read only;
+
+Tablespace altered.
+
+
+
+[oracle@rhel11gr2rac1 purchase_bkp]$ rman target /
+
+Recovery Manager: Release 12.1.0.2.0 - Production on Sun Sep 13 07:14:51 2015
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: PURCHASE (DBID=3978345698)
+
+
+
+RMAN> show channel;
+
+RMAN configuration parameters for database with db_unique_name PURCHASE are:
+CONFIGURE CHANNEL DEVICE TYPE DISK FORMAT   '/backup/purchase_bkp/backup_for_mig_%U.bkp';
+
+
+RMAN> show device type;
+
+RMAN configuration parameters for database with db_unique_name PURCHASE are:
+CONFIGURE DEVICE TYPE DISK PARALLELISM 4 BACKUP TYPE TO BACKUPSET;
+
+
+RMAN> backup incremental level 0 tablespace ACTIVE_DATA, READ_ONLY_TBLS;
+
+Starting backup at 13-SEP-15
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=58 device type=DISK
+allocated channel: ORA_DISK_2
+channel ORA_DISK_2: SID=52 device type=DISK
+allocated channel: ORA_DISK_3
+channel ORA_DISK_3: SID=53 device type=DISK
+allocated channel: ORA_DISK_4
+channel ORA_DISK_4: SID=61 device type=DISK
+channel ORA_DISK_1: starting incremental level 0 datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00002 name=/u01/app/oracle/oradata/purchase/active_data01.dbf
+channel ORA_DISK_1: starting piece 1 at 13-SEP-15
+channel ORA_DISK_2: starting incremental level 0 datafile backup set
+channel ORA_DISK_2: specifying datafile(s) in backup set
+input datafile file number=00007 name=/u01/app/oracle/oradata/purchase/read_only01.dbf
+channel ORA_DISK_2: starting piece 1 at 13-SEP-15
+channel ORA_DISK_1: finished piece 1 at 13-SEP-15
+piece handle=/backup/purchase_bkp/backup_for_mig_5dqh1hjj_1_1.bkp tag=TAG20150913T071706 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+channel ORA_DISK_2: finished piece 1 at 13-SEP-15
+piece handle=/backup/purchase_bkp/backup_for_mig_5eqh1hjk_1_1.bkp tag=TAG20150913T071706 comment=NONE
+channel ORA_DISK_2: backup set complete, elapsed time: 00:00:01
+Finished backup at 13-SEP-15
+
+
+
+Take export metadata.
+
+[oracle@rhel11gr2rac1 purchase_bkp]$ expdp directory=tts_exp dumpfile=tts_metadata.dmp transport_tablespaces=ACTIVE_DATA,READ_ONLY_TBLS logfile=tts_exp.log
+
+Export: Release 12.1.0.2.0 - Production on Sun Sep 13 07:19:08 2015
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+Username: / as sysdba
+
+Connected to: Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics, Real Application Testing
+and Unified Auditing options
+Starting "SYS"."SYS_EXPORT_TRANSPORTABLE_01":  /******** AS SYSDBA directory=tts_exp dumpfile=tts_metadata.dmp transport_tablespaces=ACTIVE_DATA,READ_ONLY_TBLS logfile=tts_exp.log
+Processing object type TRANSPORTABLE_EXPORT/PLUGTS_BLK
+Processing object type TRANSPORTABLE_EXPORT/TABLE
+Processing object type TRANSPORTABLE_EXPORT/INDEX/INDEX
+Processing object type TRANSPORTABLE_EXPORT/CONSTRAINT/CONSTRAINT
+Processing object type TRANSPORTABLE_EXPORT/INDEX_STATISTICS
+Processing object type TRANSPORTABLE_EXPORT/CONSTRAINT/REF_CONSTRAINT
+Processing object type TRANSPORTABLE_EXPORT/TABLE_STATISTICS
+Processing object type TRANSPORTABLE_EXPORT/STATISTICS/MARKER
+Processing object type TRANSPORTABLE_EXPORT/POST_INSTANCE/PLUGTS_BLK
+Master table "SYS"."SYS_EXPORT_TRANSPORTABLE_01" successfully loaded/unloaded
+******************************************************************************
+Dump file set for SYS.SYS_EXPORT_TRANSPORTABLE_01 is:
+  /backup/purchase_bkp/tts_metadata.dmp
+******************************************************************************
+Datafiles required for transportable tablespace ACTIVE_DATA:
+  /u01/app/oracle/oradata/purchase/active_data01.dbf
+Datafiles required for transportable tablespace READ_ONLY_TBLS:
+  /u01/app/oracle/oradata/purchase/read_only01.dbf
+Job "SYS"."SYS_EXPORT_TRANSPORTABLE_01" successfully completed at Sun Sep 13 07:22:04 2015 elapsed 0 00:02:41
+
+
+-- Copy the dumpfile and the bakup set to target.
+
+
+[oracle@rhel11gr2rac1 purchase_bkp]$ ls -lrt
+total 3884
+-rw-r----- 1 oracle oinstall 1581056 Sep 13 07:17 backup_for_mig_5eqh1hjk_1_1.bkp
+-rw-r----- 1 oracle oinstall 2146304 Sep 13 07:17 backup_for_mig_5dqh1hjj_1_1.bkp
+-rw-r--r-- 1 oracle oinstall    1751 Sep 13 07:22 tts_exp.log
+-rw-r----- 1 oracle oinstall  233472 Sep 13 07:22 tts_metadata.dmp
+
+[oracle@rhel11gr2rac1 purchase_bkp]$ scp * oracle@192.168.0.51:/opt/oracle/backup/
+Password:
+backup_for_mig_5dqh1hjj_1_1.bkp                                                                                                       100% 2096KB   2.1MB/s   00:01
+backup_for_mig_5eqh1hjk_1_1.bkp                                                                                                       100% 1544KB   1.5MB/s   00:01
+tts_exp.log                                                                                                                           100% 1751     1.7KB/s   00:00
+tts_metadata.dmp                                                                                                                      100%  228KB 228.0KB/s   00:00
+
+
+--Target
+
+Restore the tabelspaces.
+
+
+RMAN> run
+2> {
+3> restore
+4> from platform 'Linux x86 64-bit'
+5> foreign tablespace READ_ONLY_TBLS to new
+6> from backupset '/opt/oracle/backup/backup_for_mig_5eqh1hjk_1_1.bkp';
+7> }
+
+Starting restore at 13-SEP-15
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=1 device type=DISK
+
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring all files in foreign tablespace READ_ONLY_TBLS
+channel ORA_DISK_1: reading from backup piece /opt/oracle/backup/backup_for_mig_5eqh1hjk_1_1.bkp
+channel ORA_DISK_1: restoring foreign file 7 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_read_onl_bz9g0lfv_.dbf
+channel ORA_DISK_1: foreign piece handle=/opt/oracle/backup/backup_for_mig_5eqh1hjk_1_1.bkp
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:04
+Finished restore at 13-SEP-15
+
+RMAN> run
+2> {
+3> restore
+4> from platform 'Linux x86 64-bit'
+5> foreign tablespace ACTIVE_DATA to new
+6> from backupset '/opt/oracle/backup/backup_for_mig_5dqh1hjj_1_1.bkp';
+7> }
+
+Starting restore at 13-SEP-15
+using channel ORA_DISK_1
+
+channel ORA_DISK_1: starting datafile backup set restore
+channel ORA_DISK_1: specifying datafile(s) to restore from backup set
+channel ORA_DISK_1: restoring all files in foreign tablespace ACTIVE_DATA
+channel ORA_DISK_1: reading from backup piece /opt/oracle/backup/backup_for_mig_5dqh1hjj_1_1.bkp
+channel ORA_DISK_1: restoring foreign file 2 to /opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_active_d_bz9g235p_.dbf
+channel ORA_DISK_1: foreign piece handle=/opt/oracle/backup/backup_for_mig_5dqh1hjj_1_1.bkp
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:16
+Finished restore at 13-SEP-15
+
+RMAN> exit
+
+
+-- Create users.
+
+SQL> CREATE USER "MANZOOR" IDENTIFIED BY VALUES 'S:47916C1085E55EC174043CA9A8536ED8209B16511B0BE5C18B910DB32736;H:DE387266818DAFC68F4448F64892E5F1;A62404A2ED936EE3'
+  2  /
+
+User created.
+
+
+-- Import Metadata.
+
+
+-bash-3.2$ impdp directory=tts_imp dumpfile=tts_metadata.dmp logfile=tts_imp.log transport_datafiles='/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_read_onl_bz9g0lfv_.dbf','/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_active_d_bz9g235p_.dbf'
+
+Import: Release 12.1.0.2.0 - Production on Sun Sep 13 07:46:41 2015
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+Username: / as sysdba
+
+Connected to: Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+Master table "SYS"."SYS_IMPORT_TRANSPORTABLE_01" successfully loaded/unloaded
+Starting "SYS"."SYS_IMPORT_TRANSPORTABLE_01":  /******** AS SYSDBA directory=tts_imp dumpfile=tts_metadata.dmp logfile=tts_imp.log transport_datafiles=/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_read_onl_bz9g0lfv_.dbf,/opt/oracle/oradata/warehdb/PURCHASE/datafile/o1_mf_active_d_bz9g235p_.dbf
+Processing object type TRANSPORTABLE_EXPORT/PLUGTS_BLK
+Processing object type TRANSPORTABLE_EXPORT/TABLE
+Processing object type TRANSPORTABLE_EXPORT/INDEX/INDEX
+Processing object type TRANSPORTABLE_EXPORT/CONSTRAINT/CONSTRAINT
+Processing object type TRANSPORTABLE_EXPORT/INDEX_STATISTICS
+Processing object type TRANSPORTABLE_EXPORT/CONSTRAINT/REF_CONSTRAINT
+Processing object type TRANSPORTABLE_EXPORT/TABLE_STATISTICS
+Processing object type TRANSPORTABLE_EXPORT/STATISTICS/MARKER
+Processing object type TRANSPORTABLE_EXPORT/POST_INSTANCE/PLUGTS_BLK
+Job "SYS"."SYS_IMPORT_TRANSPORTABLE_01" successfully completed at Sun Sep 13 07:49:03 2015 elapsed 0 00:02:01
+
+
+
+SQL> select owner, count(*) from dba_segments where tablespace_name = 'ACTIVE_DATA' group by owner;
+
+OWNER                            COUNT(*)
+------------------------------ ----------
+MANZOOR                                5
+
+
+SQL> select owner, tablespace_name,  count(*) from dba_segments where owner = 'MANZOOR' group by owner, tablespace_name;
+
+OWNER                          TABLESPACE_NAME                  COUNT(*)
+------------------------------ ------------------------------ ----------
+MANZOOR                        ACTIVE_DATA                             5
+MANZOOR                        READ_ONLY_TBLS                          3
+
+SQL> select owner, count(*) from dba_segments where tablespace_name = 'READ_ONLY_TBLS' group by owner;
+
+OWNER                            COUNT(*)
+------------------------------ ----------
+MANZOOR                                 3
+
+TTS cross platform is completed
+
+Refer for incremental crossplatform tts
+
+12C - Reduce Transportable Tablespace Downtime using Cross Platform Incremental Backup (Doc ID 2005729.1)
+
