@@ -1,4 +1,3 @@
-
 col osuser format a11
 col program format a25
 col module format a25
