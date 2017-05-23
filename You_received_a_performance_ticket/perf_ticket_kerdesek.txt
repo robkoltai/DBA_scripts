@@ -1,0 +1,38 @@
+-- Perf probléma bejelentés azonnali visszakérdezés
+ SRDC - How to Collect Standard Information for a Database Performance Problem (without Diagnostic Pack License) (Doc ID 2065320.1)
+ SRDC - How to Collect Standard Information for a Database Performance Problem (wit Diagnostic Pack License) (Doc ID 2065318.1)
+  
+ How to Investigate Slow or Hanging Database Performance Issues (Doc ID 1362329.1)
+
+
+Adatbázis azonosítás
+  -- Hosztnév
+  *- Adatbázisnév
+  
+Probléma leírása
+  *- Mit tapasztalt a felhasználó?
+
+Elvárt mûködés leírása
+  *- Mi az elvárt mûködés? Az adott folyamatnak/SQL-nek milyen válaszidõvel kellene futnia?
+  
+Problémás idõszak leírása  
+  *- Mikor tapasztalta a jelenséget. Adja meg a jelenség kezdetét végét a lehetõ legpontosabban?
+  -- Ha ismert és releváns adjon meg egy olyan idõszakot amikor elvárt teljesítménnyel mûködött az alkalmazás
+  -- Volt-e már hasonló probléma régebben? Akkor mi volt a megoldás?
+  
+Változások leírása  
+  *- Növekedett-e jelentõsen a feldolgozandó adatok köre az elmúlt idõszakban?
+  *- Volt-e alkalmazásbeli, alkalmazás sémabeli változás az elmúlt idõszakban?
+  
+Szûkítés
+  -- Milyen felhasználóval használja az alkalmazás az adatbázist?
+  
+*Probléma lehetséges típusa ha be tudja azonosítani. Többet is lehet választani
+  -- Nem tudom
+  -- Lock-olás
+  -- Batch folyamat futása
+  -- Egy adott SQL futása. Kérjük adja meg az SQL-t
+  -- Általános lassulás
+  
+  
+ 
