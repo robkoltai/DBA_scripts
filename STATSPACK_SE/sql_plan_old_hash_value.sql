@@ -1,4 +1,8 @@
---ALTER SESSION SET "_cursor_plan_unparse_enabled"=TRUE;
+--_cursor_plan_unparse_enabled=TRUE is the database default.
+-- Du to several bugs in the current RDBMs, it might be set
+-- otherwise on your box. Change it to TRUE to make valuable
+-- predicate information visible.
+ALTER SESSION SET "_cursor_plan_unparse_enabled"=TRUE;
 
 define OHV=<your OHV from STATSPACK report>
 undefine CHILD_NUMBER
