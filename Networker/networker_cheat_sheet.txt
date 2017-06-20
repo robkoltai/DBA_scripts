@@ -1,0 +1,12 @@
+
+# savesets from the last day
+mminfo 
+
+# saveset from client, fresher than 1 week
+mminfo -q "client=atlas4,savetime>=1 weeks ago"
+
+# some fields defined
+mminfo -q "client=atlas4,savetime>=1 weeks ago" -r "client,totalsize,savetime,volume,size,level,name"
+ 
+# savetime with long time format
+mminfo -q "client=atlas4,savetime>=1 weeks ago" -r "client,totalsize,savetime(17),volume,level,name"
