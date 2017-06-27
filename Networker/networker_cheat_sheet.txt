@@ -1,3 +1,4 @@
+/usr/sbin/mminfo
 
 # savesets from the last day
 mminfo 
