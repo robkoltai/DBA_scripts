@@ -9,6 +9,4 @@ select name, i.instance_name, open_mode, database_role,  switchover_status, flas
   current_scn, standby_became_primary_scn
 from v$database, v$instance i;
 
---test
-
 
