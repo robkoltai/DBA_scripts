@@ -26,4 +26,5 @@ hard parse (sharing criteria) elapsed time                             ,013     
 PL/SQL execution elapsed time                                          ,007          1
 connection management call elapsed time                                ,003         ,5
 repeated bind elapsed time                                                0          0
-*/
+*/  
+
