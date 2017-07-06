@@ -3,7 +3,7 @@ select to_char(snap_time,'YYYYMMDD') d, sql_id,
 sum(user_io_wait_time) iowait, sum(buffer_gets) gets , sum(elapsed_time) ela, sum(cpu_time) cpu
 from(
   select snap.*, sql.*
-  from  STATS$SNAPSHOT snap, STATS$SQL_SUMMARy sql
+  from  STATS$SNAPSHOT snap, STATS$SQL_SUMMARY sql
   where snap.snap_id= sql.snap_id)
 group by to_char(snap_time,'YYYYMMDD'), sql_id
 order by 6 desc;
