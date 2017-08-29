@@ -8,6 +8,7 @@
 -- Primary oldalon futtatando
 
 alter session set nls_timestamp_format='YYYYMMDD HH24:MI:SS';
+alter session set nls_date_format='YYYYMMDD HH24:MI:SS';
 
 column  apply_lag format a35
 column  curr format a35
@@ -20,9 +21,9 @@ from (
          scn_to_timestamp(applied_scn) app
   from v$archive_dest, v$database where dest_id=2)
 ; 
-
+/*
 APPLY_LAG                           SYSDATE           CURR                                APP                                 ARCHIVE_LAG
 ----------------------------------- ----------------- ----------------------------------- ----------------------------------- ------------
 +000000000 04:55:11.000000000       20170523 14:33:48 20170523 14:33:48                   20170523 09:38:37                   0
 
-
+*/
