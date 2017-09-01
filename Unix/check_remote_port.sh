@@ -1,1 +1,1 @@
- (echo > /dev/tcp/e-backup02.dbrt.hu/7939) >/dev/null 2>&1 && echo "It's up" || echo "It's down"
+ (echo > /dev/tcp/se2.remedios.local/1521) >/dev/null 2>&1 && echo "It's up" || echo "It's down"
