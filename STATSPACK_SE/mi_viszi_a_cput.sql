@@ -8,6 +8,16 @@ from(
 group by to_char(snap_time,'YYYYMMDD'), sql_id
 order by 6 desc;
 
+-- MI viszi a CPU-t órára lebontva
+select to_char(snap_time,'YYYYMMDD HH24') h, sql_id, 
+sum(user_io_wait_time) iowait, sum(buffer_gets) gets , sum(elapsed_time) ela, sum(cpu_time) cpu
+from(
+  select snap.*, sql.*
+  from  STATS$SNAPSHOT snap, STATS$SQL_SUMMARY sql
+  where snap.snap_id= sql.snap_id)
+group by to_char(snap_time,'YYYYMMDD HH24'), sql_id
+order by 6 desc;
+
 
 /*
 1       20170314        36jp5u1xwvzdu   86149805        19926856617     654143309145    653352359375
