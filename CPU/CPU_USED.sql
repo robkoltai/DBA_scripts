@@ -1,7 +1,14 @@
--- When is stats collected? http://blog.orapub.com/20120419/when-are-oracle-database-dba-hist-sysstat-values-correct.html
--- sesstat vs time_model https://jonathanlewis.wordpress.com/2009/05/26/cpu-used/
--- AWR or ASH http://oracledoug.com/serendipity/index.php?/archives/1432-Time-Matters-DB-CPU.html
--- AIX SMT https://ardentperf.com/2016/07/01/understanding-cpu-on-aix-power-smt-systems/
+-- When are the stats in AWR collected? At the end of the snapshot:
+        http://blog.orapub.com/20120419/when-are-oracle-database-dba-hist-sysstat-values-correct.html
+-- sesstat vs time_model. Time model is newer and more accurate
+        https://jonathanlewis.wordpress.com/2009/05/26/cpu-used/
+-- AWR or ASH 
+        http://oracledoug.com/serendipity/index.php?/archives/1432-Time-Matters-DB-CPU.html
+        Active  Sessions: Wait Time = DB Time (measured) - CPU Time (measured)- IO (measured). Top down. Waits include inflated runq
+        Average Active Sessions: DB CPU (measured) + Waits (measured). Not top down. Wait is inflated by runq
+        Top activity: ASH samples. Anything not wait accounted as CPU. This shows CPU and CPU runq.
+-- AIX SMT 
+        https://ardentperf.com/2016/07/01/understanding-cpu-on-aix-power-smt-systems/
 -- Metalink "DB CPU" / "CPU + Wait for CPU" / "CPU time" Reference Note (Doc ID 1965757.1)
 -- https://hoopercharles.wordpress.com/2010/02/22/cpu-usage-monitoring-what-are-the-statistics-and-when-are-the-statistics-updated/
 
@@ -59,6 +66,7 @@ where stat.snap_id=snap.snap_id
   and stat.stat_name = 'CPU used by this session'
 order by to_char(snap.begin_interval_time,'YYYYMMDD HH24');
 
+
 /*
 
 INSTANCE_NAME    INSTANCE_NUMBER STARTUP_TIME        BEGIN_INTERVAL_TI BEGIN_HOUR       VALUE CPU_SECONDS STAT_NAME
@@ -109,6 +117,27 @@ where stat.snap_id=snap.snap_id
   and stat.stat_name = 'DB CPU'
 order by to_char(snap.begin_interval_time,'YYYYMMDD HH24');
 
+-- For collecting data
+/* -- Create the dump file immediately 
+  CREATE TABLE DB_CPU_FROM_AWR ORGANIZATION EXTERNAL (TYPE ORACLE_DATAPUMP
+  DEFAULT DIRECTORY workdir LOCATION ('db_cpu_from_awr.dmp'))
+  AS */
+select  i.instance_name, 
+        snap.instance_number, 
+        snap.startup_time          startup_time, 
+        snap.begin_interval_time   begin_interval_time, 
+        stat.value,
+        round(stat.value/1e6 - lag(stat.value/1e6,1,0) over (order by to_char(snap.begin_interval_time,'YYYYMMDD HH24:MI:SS')),2) cpu_seconds,
+        stat.stat_name
+from DBA_HIST_SYS_TIME_MODEL stat,
+     dba_hist_snapshot snap,
+     v$instance i
+where stat.snap_id=snap.snap_id
+  and stat.instance_number=snap.instance_number
+  and i.instance_number= snap.instance_number
+  and stat.stat_name = 'DB CPU'
+;
+
 /*
 INSTANCE_NAME    INSTANCE_NUMBER STARTUP_TIME        BEGIN_INTERVAL_TI BEGIN_HOUR       VALUE CPU_SECONDS STAT_NAME
 ---------------- --------------- ------------------- ----------------- ----------- ---------- ----------- ----------------------------
@@ -130,7 +159,7 @@ single                         1 20171101 12:29      20171101 12:29:37 20171101 
 */
 
 -----------------------------------------
--- DASH
+-- DASH HOURLY
 -----------------------------------------
 -- Ebben CPU runqueue wait is benne van
 select i.instance_name, i.instance_number, 
@@ -166,6 +195,23 @@ single                         1 20171101 13        630
 
 
 -----------------------------------------
+-- DASH DETAILED
+-----------------------------------------
+-- Ebben CPU runqueue wait is benne van, mert mintavetelezett
+/* -- Create the dump file immediately 
+  CREATE TABLE waits_from_dash ORGANIZATION EXTERNAL (TYPE ORACLE_DATAPUMP
+  DEFAULT DIRECTORY workdir LOCATION ('waits_from_dash.dmp'))
+  AS */
+select i.instance_name, i.instance_number, 
+       ash.sample_time,
+       sql_id,
+       event,
+       wait_class, wait_time, session_state, time_waited
+from dba_hist_active_sess_history ash,
+     v$instance i
+where i.instance_number = ash.instance_number;
+
+-----------------------------------------
 -- SYSMETRICS OS
 -----------------------------------------
 -- Microseconds
@@ -192,19 +238,16 @@ and os2.stat_name = 'IDLE_TIME'
 and s.snap_id between &beginsnap and &endsnap
 )
 
+-- FOR DISPLAYING results
 select i.instance_name, 
        snap.instance_number, 
        to_char(snap.startup_time, 'YYYYMMDD HH24:MI') startup_time, 
        to_char(snap.begin_interval_time,'YYYYMMDD HH24:MI:SS') begin_interval_time, 
        to_char(snap.begin_interval_time,'YYYYMMDD HH24') begin_hour, 
-       --obusy.value busy_val,
-       round(obusy.value/100 - lag(obusy.value/100,1,0) over (order by to_char(snap.begin_interval_time,'YYYYMMDD HH24:MI:SS')),2) busy_time,
-       --oidle.value idle_val,
-       round(oidle.value/100 - lag(oidle.value/100,1,0) over (order by to_char(snap.begin_interval_time,'YYYYMMDD HH24:MI:SS')),2) idle_time,
-       --ouser.value user_val,
-       round(ouser.value/100 - lag(ouser.value/100,1,0) over (order by to_char(snap.begin_interval_time,'YYYYMMDD HH24:MI:SS')),2) user_time,
-       --osys.value sys_val,
-       round(osys.value/100 - lag(osys.value/100,1,0) over (order by to_char(snap.begin_interval_time,'YYYYMMDD HH24:MI:SS')),2) sys_time
+       round(obusy.value/100 - lag(obusy.value/100,1,0) over (order by snap.begin_interval_time),2) busy_sec,
+       round(oidle.value/100 - lag(oidle.value/100,1,0) over (order by snap.begin_interval_time),2) idle_sec,
+       round(ouser.value/100 - lag(ouser.value/100,1,0) over (order by snap.begin_interval_time),2) user_sec,
+       round(osys.value/100  - lag(osys.value/100,1,0)  over (order by snap.begin_interval_time),2) sys_sec
 from dba_hist_snapshot snap, dba_hist_osstat obusy, dba_hist_osstat oidle, dba_hist_osstat ouser, dba_hist_osstat osys, v$instance i
 where snap.snap_id = obusy.snap_id and snap.snap_id = oidle.snap_id and snap.snap_id = ouser.snap_id and snap.snap_id = osys.snap_id
   and i.instance_number= snap.instance_number
@@ -215,3 +258,24 @@ and osys.stat_name =  'SYS_TIME'
 order by to_char(snap.begin_interval_time,'YYYYMMDD HH24');
 ;
 
+-- FOR collecting results
+/* -- Create the dump file immediately 
+  CREATE TABLE os_stats_from_awr ORGANIZATION EXTERNAL (TYPE ORACLE_DATAPUMP
+  DEFAULT DIRECTORY workdir LOCATION ('os_stats_from_awr.dmp'))
+  AS */
+SELECT i.instance_name, 
+       snap.instance_number, 
+       snap.startup_time            startup_time, 
+       snap.begin_interval_time     begin_interval_time, 
+       round(obusy.value/100 - lag(obusy.value/100,1,0) over (order by snap.begin_interval_time),2) busy_sec,
+       round(oidle.value/100 - lag(oidle.value/100,1,0) over (order by snap.begin_interval_time),2) idle_sec,
+       round(ouser.value/100 - lag(ouser.value/100,1,0) over (order by snap.begin_interval_time),2) user_sec,
+       round(osys.value/100  - lag(osys.value/100,1,0)  over (order by snap.begin_interval_time),2) sys_sec
+from dba_hist_snapshot snap, dba_hist_osstat obusy, dba_hist_osstat oidle, dba_hist_osstat ouser, dba_hist_osstat osys, v$instance i
+where snap.snap_id = obusy.snap_id and snap.snap_id = oidle.snap_id and snap.snap_id = ouser.snap_id and snap.snap_id = osys.snap_id
+  and i.instance_number= snap.instance_number
+  and obusy.stat_name = 'BUSY_TIME'
+  and oidle.stat_name = 'IDLE_TIME'
+  and ouser.stat_name = 'USER_TIME'
+  and osys.stat_name =  'SYS_TIME'
+;
