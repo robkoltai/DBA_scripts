@@ -1,0 +1,88 @@
+Definitions
+
+A virtual processor is a unit of a virtual processor resource that is allocated to a partition or
+virtual machine. PowerVM hypervisor can map a whole physical processor core, or it can
+create a time slice of a physical processor core.
+
+Entitlement is the capacity that an SPLPAR is ensured to get its share from the shared pool.
+Uncapped mode allows a partition to receive excess cycles when there are free (unused)
+cycles in the system.
+
+SHOULD BE CALLED SPREADING FACTOR
+VP>Entitlement
+2VP and 2,5 Entitlement does not work
+
+
+- file:///C:/Users/lenovo/Downloads/IBM%20PowerVM%20CPU%20Virtualization.pdf page 11
+An SPLPAR has two virtual
+processors. This means that the
+assigned processing units must be
+somewhere between 0.2 and 2. The
+maximum processing units that the
+SPLPAR can utilize is two.
+
+
+- VP should not exceed shared pool capacity
+The number of virtual processors in each LPAR in the system ought not to exceed the number
+of cores available in the system (central electronic complex (CEC)/framework). Or, if the
+partition is defined to run in a specific virtual shared processor pool, the number of virtual
+processors ought not to exceed the maximum that is defined for the specific virtual shared
+processor pool. Having more virtual processors that are configured than can be running at a
+single point in time does not provide any additional performance benefit and can cause more
+context switches of the virtual processors, which reduces performance.
+
+
+- Sum Entintlement close to processor pool capacity, but cannot exceed it
+	https://www.redbooks.ibm.com/redbooks/pdfs/sg248171.pdf
+Entitlement also determines the number of SPLPARs that can be configured for a shared
+processor pool. The sum of the entitlement of all the SPLPARs cannot exceed the number of
+physical cores that are configured in a shared pool.
+
+	At the same time, keeping entitlement low when there is capacity in the shared pool is not
+always a preferred practice. Unless the partitions are frequently idle, or there is a plan to add
+more partitions, the preferred practice is that the sum of the entitlement of all the SPLPARs
+configured is close to the capacity in the shared pool. Entitlement cycles are guaranteed, so
+when a partition is using its entitlement cycles, the partition is not preempted; however, a
+partition can be preempted when it is dispatched to use excess cycles. Following this
+preferred practice allows the hypervisor to optimize the affinity of the partition’s memory and
+processor cores and also reduces unnecessary preemptions of the virtual processors.
+
+- Entitlement should be close to real consumption
+	- If undersized hypervisor may dispatch the same core for 2 lpars, which do not fit into that one core
+	https://www.redbooks.ibm.com/redbooks/pdfs/sg248171.pdf
+	Etitlement also affects the choice of memory and processors that are assigned by the
+hypervisor for the partition. The hypervisor uses the entitlement value as a guide to the
+amount of CPU that a partition consumes. If the entitlement is undersized, performance can
+be adversely affected, for example, if there are four cores per processor chip and two
+partitions are consistently consuming about 3.5 processors of CPU capacity. If the partitions
+are undersized with four virtual processors and 2.0 entitlement (that is, entitlement is set
+below normal usage levels), the hypervisor may allocate both of the partitions on the same
+processor chip, as the entitlement of 2.0 allows two partitions to fit into a 4-core processor
+chip. If both partitions consistently consume 3.5 processors worth of capacity, the hypervisor
+is forced to dispatch some of the virtual processors on chips that do not contain memory that
+is associated with the partitions. If the partitions were configured with an entitled capacity of
+3.5 instead of 2.0, the hypervisor places each partition on its own processor chip to ensure
+that there is sufficient processor capacity for each partition. This improves the locality,
+resulting in better performance
+
+
+- Entitlement should be average and the peak addressed by uncapped capacity
+The aggregate entitlement (minimum or wanted processor) capacity of all LPARs in a system
+is a factor in the number of LPARs that can be allocated. The minimum entitlement is what is
+needed to boot the LPARs; however, the wanted entitlement is what an LPAR gets if there are
+enough resources available in the system. The preferred practice for LPAR entitlement is to
+match the entitlement capacity to average usage and let the peak be addressed by more
+uncapped capacity.
+
+
+PURR
+SPURR
+https://www.ibm.com/developerworks/community/wikis/home?lang=en#!/wiki/Power+Systems/page/CPU+frequency+monitoring+using+lparstat
+
+
+Statistics meaning
+https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/com.ibm.aix.prftools/processor_stat.htm
+
+
+CPU and throughput
+http://ksun-oracle.blogspot.hu/2015/04/ibm-aix-power7-cpu-usage-and-throughput.html

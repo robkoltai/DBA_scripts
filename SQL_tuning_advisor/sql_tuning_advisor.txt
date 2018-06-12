@@ -1,1 +1,68 @@
 http://kerryosborne.oracle-guy.com/2008/09/sql-tuning-advisor/
+
+A manual example
+
+-- create
+DECLARE
+  my_task_name VARCHAR2(300);
+  my_sqltext   CLOB;
+BEGIN
+          my_sqltext := 'SELECT /*+ RK_FOR_TUNING_TASK_16859539 */ T0.AMNE T0_AMNE, T0.AMVT T0_AMVT, T0.BANDWIDTH T0_BANDWIDTH, T0.BCASSTYPE T0_BCASSTYPE, T0.BILLDIR T0_BILLDIR, T0.CHBCASSID T0_CHBCASSID, T0.CHEND T0_CHEND, T0.CHSTART T0_CHSTART, T0.DAYTYPE T0_DAYTYPE, T0.DESTINATIONPOINT T0_DESTINATIONPOINT, T0.PARTOFDAY T0_PARTOFDAY, T0.PHONENUMBER T0_PHONENUMBER, T0.REQID T0_REQID, T0.RPTQTY_CK T0_RPTQTY_CK, T0.RPTQTY_CS T0_RPTQTY_CS, T0.RPTQTY_N T0_RPTQTY_N, T0.SSEID T0_SSEID, T0.UNITPRICE T0_UNITPRICE, T0.UNITPRICEEHP T0_UNITPRICEEHP, ' ||
+                         ' T0.UNITPRICEOKP T0_UNITPRICEOKP, T0.VATCOD T0_VATCOD, T0.addedProductId T0_addedProductId, T0.annuled T0_annuled, T0.autoCorrDir T0_autoCorrDir, T0.batchId T0_batchId, T0.bcassID T0_bcassID, T0.bcrId T0_bcrId, T0.bpId T0_bpId, T0.cancelSource T0_cancelSource, T0.cancelTarget T0_cancelTarget, T0.catalogPath T0_catalogPath, T0.chargeCode T0_chargeCode, T0.chargedOrigQty T0_chargedOrigQty, T0.chargingCycleId T0_chargingCycleId, T0.chargingCycleOffset T0_chargingCycleOffset, T0.createTime ' ||
+                         ' T0_createTime, T0.createUser T0_createUser, T0.ctId T0_ctId, T0.currency T0_currency, T0.discount T0_discount, T0.effectiveDate T0_effectiveDate, T0.endQty T0_endQty, T0.endTime T0_endTime, T0.fullAmount T0_fullAmount, T0.glAccent T0_glAccent, T0.id T0_id, T0.intermediaryPartner T0_intermediaryPartner, T0.operationId T0_operationId, T0.origQty T0_origQty, T0.origTrType T0_origTrType, T0.origUom T0_origUom, T0.pbDirection T0_pbDirection, T0.pblhId T0_pblhId, T0.pcpId T0_pcpId, T0.pcsId T0_pcsId, ' ||
+                         ' T0.pinodeId T0_pinodeId, T0.pisId T0_pisId, T0.piseId T0_piseId, T0.poId T0_poId, T0.productId T0_productId, T0.productNumberCatalogId T0_productNumberCatalogId, T0.quantity T0_quantity, T0.quantum T0_quantum, T0.reeId T0_reeId, T0.registryMode T0_registryMode, T0.requestType T0_requestType, T0.startQty T0_startQty, T0.startTime T0_startTime, T0.tariffZone T0_tariffZone, T0.technicalIdentifierForBill T0_technicalIdentifierForBill, T0.trGpId T0_trGpId, T0.trPID T0_trPID, T0.trType T0_trType,      ' ||
+                         ' T0.uom T0_uom, T0.updateTime T0_updateTime, T0.updateUser T0_updateUser, T0.BCOUNTRY T0_BCOUNTRY, T0.PATHDESC T0_PATHDESC, T0.CALCDESC T0_CALCDESC,  ' ||
+                         ' T0.ORIGNUM T0_ORIGNUM, T0.ISCOZONEDSCREC T0_ISCOZONEDSCREC, T0.ISVPNORCUGDISC T0_ISVPNORCUGDISC, T0.pieces T0_pieces  ' ||
+                         ' FROM DB2ADMIN.UTTRNNOTBFORPBILL_DSCAGGR00 T0 WHERE REQID = :1 AND CHBCASSID = :2 AND( SSEID IN (:"SYS_B_0") )  ' ;
+
+
+      my_task_name := DBMS_SQLTUNE.CREATE_TUNING_TASK (
+          sql_text    => my_sqltext
+,         bind_list   => sql_binds(anydata.ConvertVarchar2('PIQ3pVzUij'), anydata.ConvertVarchar2('PIQ0dLyn9G'), anydata.ConvertVarchar2('PIP1TgfFSg') )
+,         user_name   => 'DB2ADMIN'
+,         scope       => 'COMPREHENSIVE'
+,         time_limit  => 1800
+,         task_name   => 'RK_FOR_TUNING_TASK_16859539'
+,         description => 'Nu'
+);
+END;
+/
+
+-- check status
+SELECT TASK_ID, TASK_NAME, STATUS, STATUS_MESSAGE
+FROM   USER_ADVISOR_LOG;
+
+-- check parameters
+SELECT PARAMETER_NAME, PARAMETER_VALUE AS "VALUE"
+FROM   USER_ADVISOR_PARAMETERS
+WHERE  TASK_NAME = 'RK_FOR_TUNING_TASK_16859539'
+AND    PARAMETER_VALUE != 'UNUSED'
+ORDER BY PARAMETER_NAME;
+
+-- run it
+BEGIN
+  DBMS_SQLTUNE.EXECUTE_TUNING_TASK(task_name=>'RK_FOR_TUNING_TASK_16859539');
+END;
+/
+
+
+VARIABLE my_tid NUMBER;  
+EXEC :my_tid := 112183
+COL ADVISOR_NAME FORMAT a20
+COL SOFAR FORMAT 999
+COL TOTALWORK FORMAT 999
+
+SELECT TASK_ID, ADVISOR_NAME, SOFAR, TOTALWORK, 
+       ROUND(SOFAR/TOTALWORK*100,2) "%_COMPLETE"
+FROM   V$ADVISOR_PROGRESS
+WHERE  TASK_ID = 112183;
+
+
+SET LONG 1000
+SET LONGCHUNKSIZE 1000
+SET LINESIZE 100
+SELECT DBMS_SQLTUNE.REPORT_TUNING_TASK( 'RK_FOR_TUNING_TASK_16859539' )
+FROM   DUAL;
+
+
+UTCDRMIC00
