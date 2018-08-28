@@ -1,0 +1,200 @@
+-- This one is OK for single threaded tests
+-- For parallel something more sophisticated needs to be done 
+-- because the parallel slaves are not present at the beginning and at the end
+
+-- -------------------------------------------------------------------------------
+-- create tables
+-- -------------------------------------------------------------------------------
+-- event table 
+create table rk_runstat_events as 
+       select 
+       1 as snapid,
+       NVL(s.username, '(oracle)') AS username,
+       s.sid,
+       s.serial#,
+       se.event,
+       se.total_waits,
+       se.total_timeouts,
+       se.time_waited,
+       --se.average_wait,
+       --se.max_wait,
+       se.time_waited_micro
+FROM   v$session_event se,
+       v$session s
+WHERE  s.sid = se.sid
+AND    s.sid = (select distinct sid from v$mystat)
+ORDER BY se.time_waited DESC;
+
+-- stat table
+drop table rk_runstats purge;
+create table rk_runstats as 
+select 
+  1 as snapid, 
+  b.sid, 
+  name, 
+  value 
+from v$statname a, v$sesstat b 
+where a.statistic# = b.statistic# 
+and 1=1
+--and name like '%d%' 
+--and b.sid=c.sid 
+--and osuser!='oracle' 
+and b.sid = (select distinct sid from v$mystat)
+; 
+
+-- -------------------------------------------------------------------------------
+-- SAVE EVENTS (rk_runstats.sql)
+-- -------------------------------------------------------------------------------
+insert into rk_runstat_events (
+select
+     &1,
+     NVL(s.username, '(oracle)') ,
+     s.sid,
+     s.serial#,
+     'TEST DURATION',
+     1,
+     0,
+     to_number((SYSDATE - TO_DATE('06-08-2018 00:00:00', 'DD-MM-YYYY HH24:MI:SS')) * 24 * 60 * 60 * 1000000),
+     to_number(to_char(systimestamp,'FF6') +
+          (SYSDATE - TO_DATE('06-08-2018 00:00:00', 'DD-MM-YYYY HH24:MI:SS')) * 24 * 60 * 60 * 1000000)
+from v$session s
+where s.sid = (select distinct sid from v$mystat));
+
+insert into rk_runstat_events (
+select
+       &1 as snapid,
+       NVL(s.username, '(oracle)') AS username,
+       s.sid,
+       s.serial#,
+       se.event,
+       se.total_waits,
+       se.total_timeouts,
+       se.time_waited,
+       --se.average_wait,
+       --se.max_wait,
+       se.time_waited_micro
+FROM   v$session_event se,
+       v$session s
+WHERE  s.sid = se.sid
+AND    s.sid = (select distinct sid from v$mystat));
+
+insert into rk_runstats (
+select 
+  &1 as snapid, 
+  b.sid, 
+  name, 
+  value 
+from v$statname a, v$sesstat b 
+where a.statistic# = b.statistic# 
+and 1=1
+and b.sid = (select distinct sid from v$mystat));
+
+commit;
+
+-- -------------------------------------------------------------------------------
+-- rk_runstats_postprocessing.sql
+-- -------------------------------------------------------------------------------
+
+insert into rk_runstat_events (
+select 1, username, sid, serial#, event, 0,0,0,0
+from 
+(select username, sid, serial#,event from rk_runstat_events where snapid=2
+minus
+select username, sid, serial#,event from rk_runstat_events where snapid=1) diff);
+
+insert into rk_runstat_events (
+select 3, username, sid, serial#, event, 0,0,0,0
+from 
+(select username, sid, serial#,event from rk_runstat_events where snapid=4
+minus
+select username, sid, serial#,event from rk_runstat_events where snapid=3) diff);
+
+commit;
+
+-- -------------------------------------------------------------------------------
+-- TEST SUITE
+-- -------------------------------------------------------------------------------
+
+@env
+
+exec dbms_output.put_line ('Truncating runsats...');
+truncate table rk_runstats;
+truncate table rk_runstat_events;
+
+alter user nvme temporary tablespace RK_temp_orig_nogroup;
+@manual_kicsi;
+
+
+@rk_runstats 1;
+exec dbms_output.put_line ('Starting index build on ORIG ts...');
+@i;
+@rk_runstats 2;
+
+alter user nvme temporary tablespace RK_temp_nvme_nogroup;
+@rk_runstats 3;
+exec dbms_output.put_line ('Starting index build on NVME ts...');
+@i;
+@rk_runstats 4;
+
+
+
+-- -------------------------------------------------------------------------------
+-- EVENTS, STATS QUERY
+-- -------------------------------------------------------------------------------
+-- EVENT
+create or replace view rk_rse_v as
+with first_run as 
+(select r1.event, r2.time_waited_micro-r1.time_waited_micro wait,
+r2.total_waits-r1.total_waits total_waits
+from rk_runstat_events r1,
+     rk_runstat_events r2    
+where r1.snapid=1 and
+      r2.snapid=2 and
+      r1.event=r2.event (+)),
+second_run as (select r3.event, r4.time_waited_micro-r3.time_waited_micro wait,
+r4.total_waits-r3.total_waits total_waits
+from rk_runstat_events r3,
+     rk_runstat_events r4    
+where r3.snapid=3 and
+      r4.snapid=4 and
+      r3.event=r4.event (+))
+select 
+  first_run.event, 
+  round(first_run.wait/1e6,2) as first_wait_sec, 
+  round(second_run.wait/1e6,2) as second_wait_sec,
+  round((first_run.wait-second_run.wait)/1e6,2) as diff_sec, 
+  round(first_run.wait/(second_run.wait+0.0001),2) as percento,
+  first_run.total_waits as first_waits, second_run.total_waits as second_waits,
+  first_run.total_waits-second_run.total_waits as count_diff,
+  round(first_run.wait/(first_run.total_waits+0.0001),2) first_avg_wait_us,
+  round(second_run.wait/(second_run.total_waits+0.0001),2) second_avg_wait_us
+from first_run, second_run
+where first_run.event=second_run.event
+order by 4 desc;
+
+-- STATS
+create or replace view rk_rs_v as
+with first_run as 
+(select r1.name, 
+  r2.value-r1.value as value
+from rk_runstats r1,
+     rk_runstats r2    
+where r1.snapid=1 and
+      r2.snapid=2 and
+      r1.name=r2.name (+)),
+second_run as (select r3.name, 
+r4.value-r3.value value
+from rk_runstats r3,
+     rk_runstats r4    
+where r3.snapid=3 and
+      r4.snapid=4 and
+      r3.name=r4.name (+))
+select 
+  first_run.name, 
+  first_run.value first_val,
+  second_run.value second_val,
+  first_run.value-second_run.value as value_diff
+from first_run, second_run
+where first_run.name=second_run.name
+  --and first_run.value-second_run.value>0
+order by 4 desc;

@@ -2,7 +2,8 @@
 -- STATS SQLs
 SET SERVEROUTPUT ON
 EXECUTE DBMS_RESULT_CACHE.MEMORY_REPORT;
-COLUMN name FORMAT a20
+COLUMN name FORMAT a40
+column value format a30
 SELECT name, value
 FROM V$RESULT_CACHE_STATISTICS;
 show parameter result_cache_max;
