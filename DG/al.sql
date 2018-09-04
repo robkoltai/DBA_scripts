@@ -3,7 +3,7 @@ alter session set nls_date_format='MON-DD HH24:MI:SS';
 column recid format 99999
 column dest_id format 99
 column name format a50
-column seq# format 9999
+column seq# format 999999
 column first_CHANGE# heading "FIRST|CHANGE#" format 9999999999
 column next_CHANGE# heading "NEXT|CHANGE#" format 9999999999
 

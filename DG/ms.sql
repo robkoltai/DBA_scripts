@@ -1,4 +1,4 @@
-set lines 120
+set lines 200
 column pid format 9999999999
 column client_pid format a8
 column process format a8
