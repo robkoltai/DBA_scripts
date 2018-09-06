@@ -6,7 +6,7 @@ set lines 200
 set pages 100
 set time on
 set timing on
-
+column ts_encrypt format a12
 
 with 
 objects as (
@@ -38,11 +38,13 @@ objects as (
     compression, 'N/A' as compress_for, deduplication from dba_lob_subpartitions),
 ts_segments as (
   select /*+ MATERIALIZE */
-        tab.tablespace_name,
+         tab.tablespace_name,
          tab.status,
+         tab.def_tab_compression ts_compression, 
+		 tab.compress_for ts_compress_for,
          seg.segment_type, owner, segment_name, nvl(partition_name,'1x1') as partition_name, 
          seg.bytes/1024/1024/1024 GiB, 
-         tab.def_tab_compression ts_compression, tab.compress_for ts_compress_for
+		 tab.encrypted ts_encrypt
          --,tab.*, seg.*
   from dba_segments seg,
        dba_tablespaces tab
@@ -50,15 +52,16 @@ ts_segments as (
 )
 select 
        (select name from v$database) db_name,
-       ts_segments.status as ts_status,
+       ts_segments.status 			as ts_status,
+	   ts_segments.ts_encrypt		as ts_encrypt,
+       ts_segments.ts_compression 	as ts_comp,
+       ts_segments.ts_compress_for 	as ts_comp4,
        ts_segments.segment_type,
        --ts_segments.owner,
        --ts_segments.tablespace_name, 
-       ts_compression,
-       ts_compress_for,
-       objects.compression obj_compression,
-       objects.compress_for obj_compress_for,
-       objects.deduplication obj_deduplication,
+       objects.compression as obj_comp,
+       objects.compress_for as obj_comp4,
+       objects.deduplication obj_dedup,
        count(1) count,
        round(sum(ts_segments.GiB),2) GiB
 from ts_segments, 
@@ -72,10 +75,25 @@ group by
        ts_segments.status,
        --ts_segments.owner,
        --ts_segments.tablespace_name, 
+	   ts_encrypt,
        ts_compression,
        ts_compress_for,
        objects.compression,
        objects.compress_for,
        objects.deduplication
-order by segment_type, obj_compression;
+order by segment_type, obj_comp;
 
+/*
+DB_NAME   TS_STATUS TS_ENCRYPT   TS_COMP  TS_COMP4     SEGMENT_TYPE       OBJ_COMP OBJ_COMP4    OBJ_DEDUP            COUNT        GIB
+--------- --------- ------------ -------- ------------ ------------------ -------- ------------ --------------- ---------- ----------
+TMSDB     ONLINE    NO           DISABLED              INDEX              DISABLED N/A          N/A                   2376        .43
+TMSDB     ONLINE    NO           DISABLED              INDEX              ENABLED  N/A          N/A                     59        .01
+TMSDB     ONLINE    NO           DISABLED              INDEX PARTITION    DISABLED N/A          N/A                    286        .04
+TMSDB     ONLINE    NO           DISABLED              LOBSEGMENT         NO       N/A          NO                      59         .1
+TMSDB     ONLINE    NO           DISABLED              LOBSEGMENT         NONE     N/A          NONE                   799      32.01
+TMSDB     ONLINE    NO           DISABLED              TABLE              DISABLED              N/A                   1640        .76
+TMSDB     ONLINE    NO           DISABLED              TABLE              ENABLED  OLTP         N/A                      2          0
+TMSDB     ONLINE    NO           DISABLED              TABLE PARTITION    DISABLED              N/A                    256        .04
+TMSDB     ONLINE    NO           DISABLED              TABLE SUBPARTITION DISABLED              N/A                     32          0
+
+*/
