@@ -3,7 +3,8 @@
  SRDC - How to Collect Standard Information for a Database Performance Problem (wit Diagnostic Pack License) (Doc ID 2065318.1)
   
  How to Investigate Slow or Hanging Database Performance Issues (Doc ID 1362329.1)
-
+	
+SQL Tuning Health-Check Script (SQLHC) (Doc ID 1366133.1)
 
 Adatbázis azonosítás
   -- Hosztnév
