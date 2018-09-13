@@ -10,6 +10,7 @@
 alter session set nls_timestamp_format='YYYYMMDD HH24:MI:SS';
 alter session set nls_date_format='YYYYMMDD HH24:MI:SS';
 
+set lines 200
 column  apply_lag format a35
 column  curr format a35
 column  app format a35

@@ -1,4 +1,4 @@
-set lines 120
+set lines 200
 column name format a6
 column open_mode format a12
 column standby_became_primary_scn heading "STANDBY BECAME|PRIMARY SCN"

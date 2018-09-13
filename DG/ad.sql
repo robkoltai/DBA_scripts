@@ -2,7 +2,7 @@ set lines 120
 column destination format a13
 column id format 999
 column target format a7
-column seq# format 9999
+column seq# format 999999
 column proc format a4
 column arch format a5
 column status format a7

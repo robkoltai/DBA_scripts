@@ -4,7 +4,7 @@ column error format a25
 column destination format a25
 column id format 999
 column target format a7
-column seq# format 9999
+column seq# format 999999
 column proc format a4
 column fail_date format a9
 column log_sequence heading "LOG|SEQ" format 99999
