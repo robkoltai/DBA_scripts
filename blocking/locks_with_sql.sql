@@ -1,6 +1,7 @@
 -- Complete LOCK decode from metalink
 -- plus SQL from v$sql
 -- filtered for JI locks
+-- plus BLOCKED, BLOCKING, FINAL_BLOCKING information
 
 select
 CASE WHEN BLOCKING_SESSION IS NOT NULL THEN 'BLOCKED' end is_blocked,
