@@ -20,12 +20,15 @@ order by  1,5 desc;
 select * from TABLE(dbms_xplan.display_awr('&sql_id', format=>'advanced +note -alias +outline +predicate'));
 
 
+set long 20000
+column rep format a300
+column z_report format a300
 --attekinto
-SELECT dbms_sqltune.Report_sql_monitor_list(SQL_ID=>'&sql_id', TYPE=>'text',report_level=>'ALL')
+SELECT dbms_sqltune.Report_sql_monitor_list(SQL_ID=>'&sql_id', TYPE=>'text',report_level=>'ALL') rep
 FROM   dual;
 
 -- reszletes
-SELECT dbms_sqltune.Report_sql_monitor(SQL_ID=>'&sql_id', TYPE=>'text',report_level=>'ALL', sql_exec_id => 16777216)
+SELECT dbms_sqltune.Report_sql_monitor(SQL_ID=>'&sql_id', TYPE=>'text',report_level=>'ALL', sql_exec_id => &exec) rep
 FROM   dual;
 
 -- historikus

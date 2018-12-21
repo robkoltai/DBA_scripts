@@ -1,0 +1,60 @@
+https://docs.oracle.com/en/database/oracle/oracle-database/18/admin/monitoring-the-database.html#GUID-7AB7A507-E33A-4967-A84A-AA21B0478C0B
+
+
+Performance Monitoring Data Dictionary Views
+You can query a set of data dictionary views to monitor an Oracle Database instance.
+
+These views are general in their scope. Other views, more specific to a process, are discussed in the section of this book where the process is described.
+
+View	Description
+V$LOCK
+
+Lists the locks currently held by Oracle Database and outstanding requests for a lock or latch
+
+DBA_BLOCKERS
+
+Displays a session if it is holding a lock on an object for which another session is waiting
+
+DBA_WAITERS
+
+Displays a session if it is waiting for a locked object
+
+DBA_DDL_LOCKS
+
+Lists all DDL locks held in the database and all outstanding requests for a DDL lock
+
+DBA_DML_LOCKS
+
+Lists all DML locks held in the database and all outstanding requests for a DML lock
+
+DBA_LOCK
+
+Lists all locks or latches held in the database and all outstanding requests for a lock or latch
+
+DBA_LOCK_INTERNAL
+
+Displays a row for each lock or latch that is being held, and one row for each outstanding request for a lock or latch
+
+V$LOCKED_OBJECT
+
+Lists all locks acquired by every transaction on the system
+
+V$SESSION_WAIT
+
+Lists the resources or events for which active sessions are waiting
+
+V$SYSSTAT
+
+Contains session statistics
+
+V$RESOURCE_LIMIT
+
+Provides information about current and maximum global resource utilization for some system resources
+
+V$SQLAREA
+
+Contains statistics about shared SQL area and contains one row for each SQL string. Also provides statistics about SQL statements that are in memory, parsed, and ready for execution
+
+V$LATCH
+
+Contains statistics for nonparent latches and summary statistics for parent latches

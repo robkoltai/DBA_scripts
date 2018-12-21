@@ -8,7 +8,7 @@ where sn.snap_id=u.snap_id and
 group by  plan_hash_value, sql_id, startup_time
 order by 1;
 
-/*
+/*                                                                      count  plan hash value sql_id
 1       06.06.2017 17:00:03     113036  16.06.2017 16:00:01     113485  101     3449984569      bfmdnsc2ryz2s   18.05.2017 22:31:40
 2       06.06.2017 17:00:03     113036  06.06.2017 22:00:03     113041  7       2828538599      bfmdnsc2ryz2s   18.05.2017 22:31:40
 3       06.06.2017 17:00:03     113036  14.06.2017 15:00:01     113364  7       3417736905      bfmdnsc2ryz2s   18.05.2017 22:31:40
