@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# File: logger
+# Include it to your script:
+#
+# source logger <logfile> <loglevel> <verbosity>
+#
+# loglevel means that all greater values will be logged
+# 10 - debug
+# 20 - info
+# 30 - warning
+# 40 - error
+#
+# verbosity can be "v" verbose or "s" silent (to the standard output)
+#
+# usage examples:
+# putlog "Log message without any parameters"
+# putlog "A new log debug message 30 space tabbed" d 30
+
+default_logfile=/tmp/logger.log
+default_loglevel=15
+default_verbosity="v"
+
+logfile=${1:-${default_logfile}}
+loglevel=${2:-${default_loglevel}}
+verbosity=${3:-${default_verbosity}}
+
+senderfile=NotSet
+sendermodul=NotSet
+senderline=NotSet
+
+function putlog {
+message=$1
+logtype=${2:-"i"}
+level=${3:-10}
+if [ $logtype = "d" ]
+then logtypestring='debug   '
+     logdepth=10
+elif [ $logtype = "i" ]
+then logtypestring='info    '
+     logdepth=20
+elif [ $logtype = "w" ]
+then logtypestring='warning '
+     logdepth=30
+elif [ $logtype = "e" ]
+then logtypestring='ERROR  !'
+     logdepth=40
+fi
+
+tabber=''
+while [ $level -ne 0 ]
+do
+        tabber=$tabber' '
+        level=$(($level-1))
+done
+
+while [ ${#senderfile} -lt 10 ]
+do
+        senderfile="$senderfile"' '
+done
+
+while [ ${#sendermodul} -lt 10 ]
+do
+        sendermodul="$sendermodul"' '
+done
+
+while [ ${#senderline} -lt 10 ]
+do
+        senderline="$senderline"' '
+done
+
+
+if [ $logdepth -ge $loglevel ]
+then echo $(date "+%Y.%m.%d %H:%M:%S") "  $senderfile $sendermodul $senderline $logtypestring ${tabber} $message" >> $logfile
+     if [ $verbosity = "v" ]
+     then echo $(date "+%Y.%m.%d %H:%M:%S") "  $senderfile $sendermodul $senderline $logtypestring ${tabber} $message"
+     fi
+fi
+}
+
