@@ -31,6 +31,24 @@ FROM   dual;
 SELECT dbms_sqltune.Report_sql_monitor(SQL_ID=>'&sql_id', TYPE=>'text',report_level=>'ALL', sql_exec_id => &exec) rep
 FROM   dual;
 
+SET LONG 1000000
+SET LONGCHUNKSIZE 1000000
+SET LINESIZE 1000
+SET PAGESIZE 0
+SET TRIM ON
+SET TRIMSPOOL ON
+SET ECHO OFF
+SET FEEDBACK OFF
+
+
+SELECT DBMS_SQLTUNE.report_sql_detail(
+  sql_id       => '&sql_id',
+  type         => 'TEXT',
+  report_level => 'ALL') AS report
+FROM dual;
+
+
+
 -- historikus
 select * from dba_hist_reports where key1='&sql_id';
 

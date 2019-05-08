@@ -1,10 +1,11 @@
 select 
   min(snap_time), min(u.snap_id), 
   max(snap_time),   max(u.snap_id), 
-  count(1) count#, plan_hash_value, sql_id, startup_time
+  count(1) count#, plan_hash_value, sql_id, old_hash_value, startup_time
 from perfstat.STATS$SQL_PLAN_USAGE u, perfstat.STATS$SNAPSHOT sn
 where sn.snap_id=u.snap_id and
-      sql_id = 'bfmdnsc2ryz2s'
+      --sql_id = 'bfmdnsc2ryz2s'
+	  old_hash_value  = 3234234234
 group by  plan_hash_value, sql_id, startup_time
 order by 1;
 

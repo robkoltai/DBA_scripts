@@ -1,3 +1,7 @@
+set lines 150
+column event format a35
+column username format a30
+
 SELECT * FROM (
 	select 	event, u.username, sql_id,
 		SUM(1) as DBtime_secs

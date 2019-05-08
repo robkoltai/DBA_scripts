@@ -1,9 +1,10 @@
 select 
   to_char(snap_time,'YYYY-MM-DD HH24:MI') snap_time,u.snap_id,  
-  plan_hash_value, sql_id, startup_time, u.*
+  plan_hash_value, sql_id, old_hash_value ,startup_time, u.*
 from perfstat.STATS$SQL_PLAN_USAGE u, perfstat.STATS$SNAPSHOT sn
 where sn.snap_id=u.snap_id and
-      sql_id = '6fv9dwc2g0b6g'
+      --sql_id = '6fv9dwc2g0b6g'
+	  old_hash_value = 1231231231
 order by 1;
 
 /*

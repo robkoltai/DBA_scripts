@@ -1,0 +1,33 @@
+
+https://docs.oracle.com/en/database/oracle/oracle-database/12.2/arpls/DBMS_STATS.html#GUID-257CDCB8-3595-464B-8337-43EF23A6068D
+
+col pname format a16
+col pval1 format 9999999.9999999
+col pval2 format a25
+SELECT pname, pval1, pval2
+ FROM sys.aux_stats$
+ WHERE sname = 'SYSSTATS_INFO';
+
+  
+SELECT pname, pval1
+  FROM sys.aux_stats$
+  WHERE sname = 'SYSSTATS_MAIN';
+
+-- create stat table
+begin
+DBMS_STATS.CREATE_STAT_TABLE (
+                'SYS', 
+                'MYSTATTAB');  
+end;
+/
+
+   
+-- 2 minutes   
+BEGIN
+   DBMS_STATS.GATHER_SYSTEM_STATS (
+    gathering_mode => 'NOWORKLOAD',
+     interval => 2,
+      stattab  => 'MYSTATTAB',
+      statid   => 'NOWORK');
+END;
+/
