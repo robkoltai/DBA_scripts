@@ -43,7 +43,7 @@ SET FEEDBACK OFF
 
 SELECT DBMS_SQLTUNE.report_sql_detail(
   sql_id       => '&sql_id',
-  type         => 'TEXT',
+  type         => 'ACTIVE',
   report_level => 'ALL') AS report
 FROM dual;
 

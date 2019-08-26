@@ -2,8 +2,9 @@
 -- Nem fut le az utasítás
  begin
  dbms_sqldiag.dump_trace(p_sql_id=>'b086mzzp82x7w',
-                          p_component=>'Optimizer',
-                          p_file_id=>'OPT_TRACE_b086mzzp82x7w');
+                            p_child_number=>0,
+							p_component=>'Optimizer',
+                            p_file_id=>'OPT_TRACE_b086mzzp82x7w');  -- DO NOT PUT . in THE FILE NAME or you will get ORA-44003: invalid SQL name
  end;
 /
 

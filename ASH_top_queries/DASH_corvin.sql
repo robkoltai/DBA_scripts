@@ -64,7 +64,7 @@ where     ash.sql_id = s.sql_id (+)
 group by ash.sql_id, ash.sql_plan_hash_value, o.owner, o.object_name,
          --ash.current_obj#, 
          ash.event, ash.sql_plan_line_id, dbms_lob.substr(s.sql_text,500,1) 
-order by sum(10) desc; 
+order by sum(10) desc; 
 
 -- Most significant WAIT event
 select event,
