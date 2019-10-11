@@ -101,6 +101,7 @@
 	OCI-04030: out of process memory when trying to allocate 131112 bytes (Alloc statemen,prev row buffer)
 	ORA-24550: signal received: Unhandled exception: Code=c00000fd Flags=0
 
+	PGA kicsi
 
 
    */
