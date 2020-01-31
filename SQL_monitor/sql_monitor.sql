@@ -72,3 +72,5 @@ order by 1 desc;
 
 select * from dba_hist_reports where component_name ='perf';
 select dbms_auto_report.Report_repository_detail(rid=>1114,TYPE=>'TEXT') z_report from dual;
+
+

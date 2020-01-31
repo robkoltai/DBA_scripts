@@ -115,3 +115,16 @@ ORA-06512: at "SYS.UTL_HTTP", line 1148
 ORA-06512: at line 7
 
 
+-- REMOVE
+
+BEGIN
+  DBMS_NETWORK_ACL_ADMIN.remove_host_ace (
+    host             => 'prodapp068-69-k.garancia.hu', 
+    lower_port       => 25,
+    upper_port       => 25,
+    ace              => xs$ace_type(privilege_list => xs$name_list('SMTP'),
+                                    principal_name => 'DB_OPER_PFCLONE',
+                                    principal_type => xs_acl.ptype_db),
+    remove_empty_acl => TRUE); 
+END;
+/

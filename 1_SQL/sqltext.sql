@@ -18,6 +18,28 @@ END;
 /
 
 
+SET SERVEROUTPUT ON 
+DECLARE
+  v_out_clob CLOB;
+  v_in_clob CLOB;   
+   
+BEGIN
+  
+  select sql_fulltext
+  into v_in_clob
+  from v$sqlarea
+  where sql_id = '18nkbwcz1c9vh';  --SQL_ID
+ 
+  DBMS_UTILITY.expand_sql_text (
+    input_sql_text  => v_in_clob,
+    output_sql_text => v_out_clob
+  );
+
+  DBMS_OUTPUT.put_line(v_out_clob);
+END;
+/
+
+
 /*
 
 SELECT COUNT(*) "COUNT(*)" FROM  (SELECT TRUNC(SYSDATE) "LOADING_DAY" 
@@ -59,3 +81,37 @@ WHERE "A21"."PRODUCT_ID"="A20"."PRODUCT_ID" AND "A21"."PRIMER" IS NOT NULL AND
 
 
 */
+
+
+SET SERVEROUTPUT ON 
+DECLARE
+  v_out_clob CLOB;
+  v_in_clob CLOB;   
+  v_just_select clob;
+  v_first number;
+  
+BEGIN
+  
+  select sql_fulltext
+  into v_in_clob
+  from v$sqlarea
+  where sql_id = '18nkbwcz1c9vh';  --SQL_ID
+  
+  v_first_select_pos :=dbms_clob.instr(v_in_clob,'SELECT',1,1);
+  
+  v_just_select:= 
+    dbms_lob.substr(
+	  v_in_clob,
+      dbms_lob.getlength(v_in_clob) - v_first_select_pos,
+      v_first_select_pos);
+ 
+
+ 
+  DBMS_UTILITY.expand_sql_text (
+    input_sql_text  => v_just_select,
+    output_sql_text => v_out_clob
+  );
+
+  DBMS_OUTPUT.put_line(v_out_clob);
+END;
+/
