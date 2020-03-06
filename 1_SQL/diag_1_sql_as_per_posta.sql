@@ -155,6 +155,25 @@ FROM   dual;
 SELECT dbms_sqltune.Report_sql_monitor(SQL_ID=>'xx', TYPE=>'text',report_level=>'ALL', sql_exec_id => 16777439) rep
 FROM   dual;
 
+-- ACTIVE
+SET LONG 1000000
+SET LONGCHUNKSIZE 1000000
+SET LINESIZE 1000
+SET PAGESIZE 0
+SET TRIM ON
+SET TRIMSPOOL ON
+SET ECHO OFF
+SET FEEDBACK OFF
+
+SPOOL /host/report_sql_monitor.htm
+--SELECT DBMS_SQLTUNE.report_sql_monitor(
+SELECT DBMS_SQL_MONITOR .report_sql_monitor(
+  sql_id       => '&sql_id',
+  type         => 'ACTIVE',
+  report_level => 'ALL') AS report
+FROM dual;
+SPOOL OFF
+
 -- child 
 SELECT * FROM table (
    DBMS_XPLAN.DISPLAY_CURSOR('azgd8vrx5xqkx', null, 'ADVANCED ALLSTATS LAST -PROJECTION +ADAPTIVE'))

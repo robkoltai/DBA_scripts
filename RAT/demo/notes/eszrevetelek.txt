@@ -1,0 +1,62 @@
+
+
+General
+	SPA
+		- Semmit sem tudunk a két futás közti rendszer szintű változásról. Erről nem szól a riport.
+		- A Tuning Set-ben lévő végrehajtási számok alapján becsüli meg a "Workload Impact"-ot
+		- Plan benne van a riportban
+			HINT reporting benne van
+			Actuals nincsen benne
+		- How Does SQL Performance Analyzer (SPA) Use Binds Sets Stored Within the SQL Tuning Set (STS) During a SPA Trial (Doc ID 2082289.1)
+			Each bind set that results in a different execution plan gets loaded into the STS. 
+			SPA uses the bind set which has the worst plan based on the elapsed time metric.
+			During a 'Test Execute' task, the  "First" or "Pre-Change" trail and the "Second: or "Post-Change" trial use the same bind set values.
+		- (Doc ID 2082289.1) további infó
+			In 11gR2 & above the SQL(s) statements which are not long running are executed at least twice for each SQL statement, 
+			for as many times as possible until the execution times out (NOTE: up to a maximum of 10 times). 
+			The first execution is used to warm the buffer cache. All subsequent executions are then used to calculate the run-time execution statistics for the SQL statement 
+			based on their averages. The actual number of times that the SQL statement is executed depends on how long it takes to execute the SQL statement. 
+			Long-running SQL statement will only be executed a second time, and the execution statistics from this execution will be used. 
+			Other (faster-running) SQL statements are executed multiple times, and their execution statistics are averaged over these executions 
+		- PL/SQL package hivasokat nem kezeli
+	DB Replay
+		- AWR riportok szerint "Table Lock" van mindkét "környezeten", mindkét paraméter beállításokkal
+		- CAPTURE report erdemes megnezni. Pontosan mutatja, hogy 4 PLSQL package-et hivtunk meg. Ezt akkor lehet kihasználni, 
+		    ha az upgrade vagy egyéb változtatás miatt a package bele, vagyis tartalma változik. TOP_LEVEL capture
+
+
+1) SELECT bj4vdvmm3xh28 -# SELECT /*+ TEST_04_SELECT */ MAX(V1) FROM SELECT_T WHERE ID BETWEEN :B1 AND :B1 +31000
+	SPA
+		- Elapsed time 73%-ot javult, mert kevesebb lett a CPU time, pedig a buffer gets száma duplájára nőtt.
+		- CBO cost is nőtt. Újabb példa arra, hogy a CBO cost alapján nem megjósolható az elapsed time
+	RAT
+		- AWR diff riport mutatja, hogy tervet váltott
+	
+2) DELETE b1q74qvx9k37j -# DELETE /*+ TEST_02_DELETE */ FROM KIRK WHERE LEV_PK = ROUND(DBMS_RANDOM.VALUE(1,1E5))
+
+	SPA
+		- Parse time jelentősen romlott. Vajon miért?
+		- Más releváns változás nem volt.
+	RAT
+		- enq: TM - contention megjelenik az AWR riportban. A futások száma alapján (11) tudjuk, hogy az DELETE-hez tartozik
+
+
+3) INSERT dq80ypampmfb6 -# INSERT /*+ TEST_03_INSERT */ INTO INSERT_T VALUES (INSERT_T_SEQ.NEXTVAL,'Blalbalbal')
+	SPA
+		- Parse time arányaiban jelentősen javult. Abszolút értékben ignorálható változás: 360us helyett 200us. Vajon miért?
+		- Más releváns változás nincs
+	RAT
+		- Megjelenik a SEQUENCE probléma
+			- TOP SQL with Top Events, TOP SQL with Top Row Sources: "row cache lock" wait event.
+	
+4) UPDATE 6620b9r10c7sp	-# UPDATE /*+ TEST_01_UPDATE */ update_t set text = substr(text,:"SYS_B_0",:"SYS_B_1") || substr(text,:"SYS_B_2",:"SYS_B_3") where id = :"SYS_B_4"
+	SPA
+		- Parse time jelentősen javult
+		- Egyéb változás nincs
+	RAT
+		- Exact esetén csak a package van benne az AWR riportban, hiszen a különböző ID miatt mindíg más SQL_ID-ja van az UPDATE utasításnak
+		- TX - Row Lock Contention megjelnik
+
+	
+
+		
