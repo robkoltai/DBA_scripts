@@ -62,6 +62,7 @@ DBMS_WORKLOAD_REPLAY.START_REPLAY(): Starting database replay at 20200306 14:42:
 Replay client 1 started (14:42:37)
 
 Replay client 2 started (14:42:37)
+Replay client 2 finished (14:48:47)
 
 
 

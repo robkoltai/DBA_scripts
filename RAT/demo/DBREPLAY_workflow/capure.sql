@@ -1,14 +1,15 @@
 
 -- Hozzuk létre a capture directory-t, ha még nem létezik
-create directory capdir as '/oradata/RAT_CAPDIR';
-
--- HA capture directory már létezik
--- töröljük a tartalmát
+-- HA capture directory már létezik es nem üres
 -- rm -Rf /oradata/RAT_CAPDIR/* capture directoryban
+create directory capdir as '/oradata/RAT_CAPDIR';
+select directory_name, directory_path from dba_directories where directory_name = 'CAPDIR';
+
 
 -- Előzetes készülés
 -- TOPNSQL paraméter 100-ra felvétele. Többi paramétert nem változtatjuk.
-https://docs.oracle.com/cd/E11882_01/appdev.112/e40758/d_workload_repos.htm#ARPLS69142
+-- https://docs.oracle.com/en/database/oracle/oracle-database/19/arpls/DBMS_WORKLOAD_REPOSITORY.html#GUID-E2B46878-1BDB-4789-8A21-016A625530F1
+
 exec DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS (null,null,100,null);
 select dbid, topnsql from dba_hist_wr_control;
 exec dbms_workload_repository.create_snapshot;
@@ -24,9 +25,9 @@ https://docs.oracle.com/en/database/oracle/oracle-database/12.2/ratug/capturing-
 -- shutdown immediate;
 -- startup restrict;
 
+
 -- Filter out ha akarunk
--- Most nem akarunk
-/*
+-- Most a DEMO során nem akarunk
 BEGIN
   DBMS_WORKLOAD_CAPTURE.ADD_FILTER (
                            fname => 'HR_FILTER',
@@ -34,16 +35,17 @@ BEGIN
                            fvalue => 'HR');     -- May use %
 END;
 /
-*/
+
+
 
 -- Appears in alert.log
 BEGIN
   DBMS_WORKLOAD_CAPTURE.START_CAPTURE (
-                           name => 'RAT_DEMO', 
+                           name => 'RAT_DEMO_02', 
                            dir  => 'CAPDIR',
-                           --duration => 43200,            -- in seconds. If null then manual stop is needed
 						   default_action => 'INCLUDE');   -- Filters will be interpreted as contrary INCLUDE<->EXCLUDE
 /*
+                           duration => 43200,            -- in seconds. If null then manual stop is needed
 						   capture_sts => TRUE,
 						   sts_cap_interval => 300,       -- In seconds. capture STS from the cursor cache
 						   plsql_mode => 'TOP_LEVEL'      -- Extended nem hiszem, hogy kell
@@ -54,20 +56,13 @@ END;
 
 
 -- CHECK and MONITOR SQLDEVELOPER is recommended
-SELECT DBMS_WORKLOAD_CAPTURE.get_capture_info('CAPDIR')
-FROM   dual;
-select * from dba_workload_captures;
-
-select * from DBA_WORKLOAD_CAPTURES;
-select * from DBA_WORKLOAD_FILTERS;
+-- CHECK Capture információ
 
 -- ====================
 -- RUN THE WORKLOAD
 -- ====================
-
- ./runit_now_CAPTURE.sh
-
-
+cd /home/oracle/RAT/run
+ ./runit_now_DBREP.sh
 
 
 -- Finish capture
@@ -85,7 +80,4 @@ exec dbms_workload_repository.create_snapshot;
 -- Ez fontos, mert kulonben tudunk majd reportalini
 exec DBMS_WORKLOAD_CAPTURE.EXPORT_AWR (&capture_id); 
 
-
--- Legyen read joga mindenkinek minden file-t olvasni
--- chmod -R a+r
 

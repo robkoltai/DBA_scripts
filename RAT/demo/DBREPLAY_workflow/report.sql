@@ -127,11 +127,11 @@ Use the replay compare period report to perform a high-level comparison of one w
 @setterm.sql
 
 VAR v_clob CLOB;
-BEGIN dbms_workload_replay.COMPARE_PERIOD_REPORT (replay_id1 => 2, replay_id2 => null, format => 'HTML', 
+BEGIN dbms_workload_replay.COMPARE_PERIOD_REPORT (replay_id1 => 1, replay_id2 => null, format => 'HTML', 
    result => :v_clob ); 
 END; 
 / 
-spool workload_capture0502_replay0515_Tuned_RAT_compare.html
+spool workload_capture01_replay01_compare.html
 PRINT v_clob 
 spool off
 

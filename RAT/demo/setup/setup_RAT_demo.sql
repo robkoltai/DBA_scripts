@@ -19,11 +19,7 @@ grant execute on dbms_workload_repository to rat;
 grant create table to rat;
 grant create sequence to rat;
 
-
 grant select on dba_objects to rat;
-
--- configure pre-change db parameters
-@/home/oracle/RAT/config/config_pre_change_init_parameters.sql
 
 -- ==================================
 conn rat/rat
@@ -32,3 +28,7 @@ conn rat/rat
 @/home/oracle/RAT/setup/setup_02_parent_child.sql
 @/home/oracle/RAT/setup/setup_03_insert_table.sql
 @/home/oracle/RAT/setup/setup_04_select_table.sql
+
+-- SWITCH BACK TO SYSDBA
+conn / as sysdba
+

@@ -1,27 +1,16 @@
 -------------------------------------
---- INNEN JON ROBI FELDOLGOZAS
+--- REPLAY LEPESEK
 -------------------------------------
 /* most nem masolgatok, mint az elesben 
 most
   nem kell shared storage
   nem kell uj directory
 
-cd /opt/oradump/pfup/
-cp -r grb_pf_live_capture_0502_bck grb_pf_live_capture0502_replay0508
-
--- ezek masolasa egyenkent
- cd /opt/oradump/pfup/grb_pf_live_capture0502_replay0508/cap
- cp /opt/oradump/pfup/grb_pf_live_capture_0502_bck/cap/wcr_ca.dmp .
- cp /opt/oradump/pfup/grb_pf_live_capture_0502_bck/cap/wcr_cap_uc_graph.extb .
-
-
--- itt van a capture
-create or replace directory GRB_PF_LIVE_RAT_WORK as '/opt/oradump/pfup/grb_pf_live_capture0502_replay0508';
 */
 
 -- process
 -- Check alert.log tail -f. Nincs ott semmi
--- check OS directory /oradata/CAPDIR/pp19.3.0.0.0
+-- check OS directory /oradata/RAT_CAPDIR/pp19.3.0.0.0
 set timi on
 set time on
 BEGIN
@@ -30,6 +19,27 @@ BEGIN
 END;
 /
 
+
+
+-- CALIBRATE THE CLIENTS
+cd /oradata/RAT_CAPDIR
+wrc system mode=calibrate replaydir=/oradata/RAT_CAPDIR
+-- wrc system mode=get_tables replaydir=/oradata/RAT_CAPDIR nem is igaz amiket mond
+--> ORA-16953: Type of SQL statement not supported
+
+
+-- REPLAY INIT as SYS
+begin
+DBMS_WORKLOAD_REPLAY.INITIALIZE_REPLAY (replay_name => 'RAT_DEMO_CAPTURE01_REPLAY_01',  
+                           replay_dir => 'CAPDIR',
+                           plsql_mode => 'top_level');
+END;
+/
+
+
+-- CHECK
+select * from dba_workload_replays;
+	
 
 -- VAN ilyen lehetőseg
 /*
@@ -64,61 +74,9 @@ end;'
 end;
 /
 
-begin
- dbms_workload_replay.SET_SQL_MAPPING (
-   sql_id         =>  '28zargwmczpk9',
-   operation      => 'REPLACE',
-   replacement_sql_text => q'[
-declare 
-  i_update number;
-  stmt varchar2(2000);
-  r number;
-begin
-  for i_update in 1..$RUN_COUNT loop
-    -- There are ~70000 records in the table
-	r:= ROUND(DBMS_RANDOM.VALUE(1,70000));
-	
-    stmt := 'UPDATE /*+ TEST_01_UPDATE REPLACED */ update_t '||
-	        'set text = substr(text,73,100) || substr(text,1,72) '||
-			'where id = :i_update';
-    execute immediate stmt using i_update;
-    commit;
-  end loop;
-end;
-/]'
-
-);
-end;
-/
-
-
--- CALIBRATE THE CLIENTS
-cd /oradata/RAT_CAPDIR
-wrc system mode=calibrate replaydir=/oradata/RAT_CAPDIR
-wrc system mode=get_tables replaydir=/oradata/RAT_CAPDIR
-
---> ORA-16953: Type of SQL statement not supported
-
-
--- REPLAY INIT as SYS
---run this on sodb5 and not yet on the clients
-begin
-DBMS_WORKLOAD_REPLAY.INITIALIZE_REPLAY (replay_name => 'RAT_DEMO_REPLAY_01',  
-                           replay_dir => 'CAPDIR',
-                           plsql_mode => 'top_level');
-END;
-/
-
-
--- CHECK
-select * from dba_workload_replays;
-	
-
--- scp
-
 
 -- Tegyuk meg amit akarunk
-
+-- SYS WINDOW
 conn rat/rat
 @/home/oracle/RAT/setup/setup_01_update_table.sql
 @/home/oracle/RAT/setup/setup_02_parent_child.sql
@@ -127,9 +85,6 @@ conn rat/rat
 conn / as sysdba
 @/home/oracle/RAT/config/config_DBREP_the_change_init_parameters.sql
 
-
--- config 300 SQLs in AWR
-exec DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS (null,null,100,null);
 
 -- REPLAY prepare
 BEGIN
@@ -162,8 +117,6 @@ END;
 2020-03-05T14:53:26.274689+00:00
 DBMS_WORKLOAD_REPLAY.START_REPLAY(): Starting database replay at 03/05/2020 14:53:25
 
-
-
 Replay client 1 started (14:53:27)
 Replay client 1 finished (15:07:07)
 
@@ -184,5 +137,5 @@ Parameters
 
 Example
 
-exec dbms_workload_repository.awr_set_report_thresholds(top_n_sql=>300,top_n_sql_max=>300);
+exec dbms_workload_repository.awr_set_report_thresholds(top_n_sql=>100,top_n_sql_max=>100);
 */
