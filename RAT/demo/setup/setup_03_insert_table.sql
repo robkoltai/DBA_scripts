@@ -20,3 +20,5 @@ drop sequence insert_t_seq;
 create table insert_t as select 0 as id, 	'This is an insert test' as name from dual;
 create sequence insert_t_seq nocache order;
 create index ind_insert_t_id on insert_t (id);
+
+exec dbms_stats.gather_table_stats('RAT','INSERT_T', cascade=>true) ;

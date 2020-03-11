@@ -15,30 +15,41 @@ ABLAKOK:
 - SYS
 - RAT
 - os
+- 1 client
+- 1 SQLdeveloper (DEMO.sql)
+
+-- RUN cleanup.sql in sys window
+@/home/oracle/RAT/setup/cleanup.sql
+
+-----------------------------------
+-- SPA Slieok 	20 perc
+-----------------------------------	
+
 
 -----------------------------------
 -- SPA STEPS
 -----------------------------------	
 
 -- RUN THE SETUP SCRIPTS
+-- SYS ablakban. Mutassuk meg a setup scriptet
 cd /home/oracle/RAT/setup
 sqlplus / as sysdba
-@setup_RAT_demo.sql
+@/home/oracle/RAT/setup/setup_RAT_demo.sql
 
 -- PRE CHANGE PARAMETERS
-@/home/oracle/RAT/config_SPA_pre_change_init_parameters.sql
+-- Nem mutatjuk meg, hogy milyen paraméter beállítások történnek
+@/home/oracle/RAT/config/config_SPA_pre_change_init_parameters.sql
 
--- Run the load
-chmod u+x /home/oracle/RAT/run/*sh
+-- Run the load 
+-- in OS window
 cd /home/oracle/RAT/run/
-./runit_now.sh
+./runit_now_SPA.sh
+ ps -eaf |grep runit
 
 
 -- SPA create 	SQL TUNING SET
 --     load 	SQL TUNING SET
 SPA_create_and_load_SQLSET.sql
-
-
 
 -- SPA 	run tests
 --		and report

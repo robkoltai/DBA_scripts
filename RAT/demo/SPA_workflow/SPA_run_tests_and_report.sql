@@ -1,6 +1,7 @@
+
 -- Sql tuning set format (first we need to load an STS, then analyze it)
 
-
+-- SYS window
 variable sts_task  VARCHAR2(64);
  
 -- Ami a usert legjobban erdekli az elapsed_time
@@ -8,19 +9,19 @@ EXEC :sts_task := DBMS_SQLPA.CREATE_ANALYSIS_TASK( -
   sqlset_name    =>   'THE_FOUR_COMMANDS_SQLSET', -
   order_by       =>   'elapsed_time', -
   description    =>   '4 statements by elapsed time'); 
-
 print  :sts_task
-EXEC :sts_task := 'TASK_28675';
+
+
+EXEC :sts_task := 'TASK_28931';
   
 -- Before change
 -- We want the updates, deletes executed
 EXEC DBMS_SQLPA.SET_ANALYSIS_TASK_PARAMETER( :sts_task,'EXECUTE_FULLDML', 'true');   
--- This is not taken into account   
-EXEC DBMS_SQLPA.SET_ANALYSIS_TASK_PARAMETER( :sts_task,'EXECUTE_COUNT', '27');          
 
 -- PRE SETTINGS   
-@/home/oracle/RAT/config/config_pre_change_init_parameters.sql
-
+@/home/oracle/RAT/config/config_SPA_pre_change_init_parameters.sql
+@/home/oracle/RAT/setup/setup_02_parent_child.sql
+conn / as sysdba
 begin
   DBMS_SQLPA.EXECUTE_ANALYSIS_TASK(
     task_name       => :sts_task, 
@@ -30,7 +31,8 @@ end;
 /	
 
 -- CHANGE
-@/home/oracle/RAT/config/config_the_change_init_parameters.sql
+@/home/oracle/RAT/config/config_SPA_the_change_init_parameters.sql
+
 
 begin
   DBMS_SQLPA.EXECUTE_ANALYSIS_TASK(
@@ -54,8 +56,7 @@ begin
       'execution_name2', 'after_change',
 	  'workload_impact_threshold', 0,
 	  'sql_impact_threshold', 0,
-      'comparison_metric', 
-      'elapsed_time'));
+      'comparison_metric', 'elapsed_time'));
 end;
 /
 

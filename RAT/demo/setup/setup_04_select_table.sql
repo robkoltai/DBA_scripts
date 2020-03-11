@@ -24,7 +24,7 @@ where rownum<=1e5
 ;
 
 create index ind_select_t_id on select_t(id);
-exec dbms_stats.gather_table_stats('RAT','SELECT_T') ;
+exec dbms_stats.gather_table_stats('RAT','SELECT_T', cascade=>true) ;
 
 
 

@@ -3,10 +3,10 @@
 General
 	SPA
 		- Semmit sem tudunk a két futás közti rendszer szintű változásról. Erről nem szól a riport.
-		- A Tuning Set-ben lévő végrehajtási számok alapján becsüli meg a "Workload Impact"-ot
+		- A Tuning Set-ben lévő végrehajtási számok alapján becsüli meg a "Workload Impact"-ot. Nem mindegy, hogy a cursor cache-ben mi volt, hányszor futott az SQL.
 		- Plan benne van a riportban
 			HINT reporting benne van
-			Actuals nincsen benne
+			Actuals nincsen benne, még akkor sem ha statistics_level=all
 		- How Does SQL Performance Analyzer (SPA) Use Binds Sets Stored Within the SQL Tuning Set (STS) During a SPA Trial (Doc ID 2082289.1)
 			Each bind set that results in a different execution plan gets loaded into the STS. 
 			SPA uses the bind set which has the worst plan based on the elapsed time metric.

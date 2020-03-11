@@ -18,6 +18,10 @@ grant execute on dbms_workload_repository to rat;
 
 grant create table to rat;
 grant create sequence to rat;
+grant select on v_$session to rat;
+grant select on V_$SQL_PLAN_STATISTICS_ALL to rat;
+GRANT SELECT ON v_$sql_plan TO rat;
+GRANT SELECT ON v_$sql TO rat;
 
 grant select on dba_objects to rat;
 

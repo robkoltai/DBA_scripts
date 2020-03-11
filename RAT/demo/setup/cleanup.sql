@@ -22,5 +22,4 @@ drop user rat cascade;
 alter system set cursor_sharing=exact;
 alter system set optimizer_index_cost_adj=100;
 alter system set statistics_level=all;
-
-@/home/oracle/RAT/config/setup_pre_change_init_parameters.sql
+alter system set OPTIMIZER_USE_SQL_PLAN_BASELINES=true;

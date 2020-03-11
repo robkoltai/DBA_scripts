@@ -28,3 +28,6 @@ commit;
        
 create index update_i_text on update_t(text) ;
 
+
+exec dbms_stats.gather_table_stats('RAT','UPDATE_T', cascade=>true) ;
+
