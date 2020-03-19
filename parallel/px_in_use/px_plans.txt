@@ -1,0 +1,49 @@
+--- AS SYS NO activity 0 records
+----------------------------------------------------------------------------------
+SQL_ID  9zrknukqjrb65, child number 0
+-------------------------------------
+SELECT COUNT(*) FROM V$PX_PROCESS WHERE STATUS = 'IN USE'
+
+Plan hash value: 3785372079
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation                     | Name            | Starts | E-Rows |E-Bytes| Cost (%CPU)| A-Rows |   A-Time   |  OMem |  1Mem | Used-Mem |
+-------------------------------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT              |                 |      1 |        |       |     1 (100)|      1 |00:00:00.01 |       |       |          |
+|   1 |  SORT AGGREGATE               |                 |      1 |      1 |    35 |            |      1 |00:00:00.01 |       |       |          |
+|*  2 |   HASH JOIN                   |                 |      1 |      1 |    35 |     0   (0)|      0 |00:00:00.01 |  1236K|  1236K|  501K (0)|
+|*  3 |    HASH JOIN OUTER            |                 |      1 |      1 |    26 |     0   (0)|      0 |00:00:00.01 |  1538K|  1538K|  368K (0)|
+|*  4 |     FIXED TABLE FULL          | X$KXFPDP        |      1 |      1 |    12 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+|   5 |     VIEW                      | V$SESSION       |      0 |     12 |   168 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+|   6 |      NESTED LOOPS             |                 |      0 |     12 |   324 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+|   7 |       NESTED LOOPS            |                 |      0 |     12 |   276 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+|   8 |        FIXED TABLE FULL       | X$KSLWT         |      0 |     51 |   408 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+|*  9 |        FIXED TABLE FIXED INDEX| X$KSUSE (ind:1) |      0 |      1 |    15 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+|* 10 |       FIXED TABLE FIXED INDEX | X$KSLED (ind:2) |      0 |      1 |     4 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+|* 11 |    FIXED TABLE FULL           | X$KSUPR         |      0 |     18 |   162 |     0   (0)|      0 |00:00:00.01 |       |       |          |
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+Query Block Name / Object Alias (identified by operation id):
+-------------------------------------------------------------
+
+   1 - SEL$AF73C875
+   4 - SEL$AF73C875 / A@SEL$3
+   5 - SEL$68B588A0 / C@SEL$3
+   6 - SEL$68B588A0
+   8 - SEL$68B588A0 / W@SEL$7
+   9 - SEL$68B588A0 / S@SEL$7
+  10 - SEL$68B588A0 / E@SEL$7
+  11 - SEL$AF73C875 / X$KSUPR@SEL$5
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   2 - access("A"."KXFPDPSPID"="KSUPROSID")
+   3 - access("A"."KXFPDPSPID"="C"."PROCESS")
+   4 - filter((BITAND("KXFPDPFLG",8)<>0 AND DECODE(BITAND("A"."KXFPDPFLG",16),0,'IN USE','AVAILABLE')='IN USE' AND
+              "A"."INST_ID"=USERENV('INSTANCE')))
+   9 - filter(("S"."INDX"="W"."KSLWTSID" AND BITAND("S"."KSSPAFLG",1)<>0 AND BITAND("S"."KSUSEFLG",1)<>0 AND
+              "S"."INST_ID"=USERENV('INSTANCE')))
+  10 - filter("W"."KSLWTEVT"="E"."INDX")
+  11 - filter(("KSUPROSID" IS NOT NULL AND BITAND("KSSPAFLG",1)<>0 AND "INST_ID"=USERENV('INSTANCE')))
+

@@ -1,0 +1,21 @@
+A silly thing.
+There must be a parameter in between input and output files
+
+
+
+-- THIS ONE ERRORS OUT
+[oracle@localhost trace]$ trcsess output=new500.trc UNI_ora_27147.trc UNI_ora_27143.trc UNI_ora_27151.trc UNI_ora_27150.trc UNI_ora_27141.trc
+oracle.ss.tools.trcsess.SessTrcException: SessTrc-00002: Session Trace Usage error: Wrong parameters passed.
+trcsess [output=<output file name >]  [session=<session ID>] [clientid=<clientid>] [service=<service name>] [action=<action name>] [module=<module name>] <trace file names>
+
+output=<output file name> output destination default being standard output.
+session=<session Id> session to be traced.
+Session id is a combination of session Index & session serial number e.g. 8.13.
+clientid=<clientid> clientid to be traced.
+service=<service name> service to be traced.
+action=<action name> action to be traced.
+module=<module name> module to be traced.
+<trace_file_names> Space separated list of trace files with wild card '*' supported.
+
+-- THIS ONE WORKS LIKE CHARM
+[oracle@localhost trace]$ trcsess output=new500.trc module="SQL*Plus" UNI_ora_27147.trc UNI_ora_27143.trc UNI_ora_27151.trc UNI_ora_27150.trc UNI_ora_27141.trc
