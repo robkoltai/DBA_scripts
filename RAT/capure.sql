@@ -11,8 +11,8 @@ create directory capdir as '/opt/oradump/pfup/capdir';
 
 -- Előzetes készülés
 -- TOPNSQL paraméter 100-ra felvétele. Többi paramétert nem változtatjuk.
-https://docs.oracle.com/cd/E11882_01/appdev.112/e40758/d_workload_repos.htm#ARPLS69142
 exec DBMS_WORKLOAD_REPOSITORY.MODIFY_SNAPSHOT_SETTINGS (null,null,100,null);
+https://docs.oracle.com/cd/E11882_01/appdev.112/e40758/d_workload_repos.htm#ARPLS69142
 select dbid, topnsql from dba_hist_wr_control;
 exec dbms_workload_repository.create_snapshot();
 

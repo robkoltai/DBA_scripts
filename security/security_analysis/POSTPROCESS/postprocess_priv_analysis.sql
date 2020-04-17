@@ -263,7 +263,7 @@ order by 1;
 -- ************************************
 -- TOBB szintű
 -- ************************************
--- A Groupamas ROLE-okat hagyjuk békén, azaz csak Oracle role-okat vonogassunk vissza
+-- A _UGYFEL_s ROLE-okat hagyjuk békén, azaz csak Oracle role-okat vonogassunk vissza
 -- OBJEKTUM eseten PATH2 visszavon es grantol objektum privit
 -- SYS_PRIV eseten lasd lentebb
 -- Obj full lista szemrevetelezesre:
