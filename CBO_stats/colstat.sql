@@ -10,7 +10,7 @@ column high_value format a20
 column data_type format a15
 
 
-select table_name, column_name, data_type, nullable, num_distinct, high_value, low_value, num_nulls, num_buckets, last_analyzed, histogram, 
+select table_name, column_name, data_type, nullable, num_distinct, high_value, low_value, num_nulls, num_buckets, last_analyzed, histogram
 from user_tab_cols
 where table_name like upper('%&&table_name_pattern%')
 order by table_name;
@@ -29,9 +29,11 @@ undef table_name_pattern
 
 /*
 
-TABLE_NAME             NUM_ROWS     BLOCKS AVG_ROW_LEN LAST_ANAL
--------------------- ---------- ---------- ----------- ---------
-FBI_TEST_TAB              73478        634          61 17-MAY-19
+
+TABLE_NAME                COLUMN_NAME          DATA_TYPE       N NUM_DISTINCT HIGH_VALUE           LOW_VALUE             NUM_NULLS NUM_BUCKETS LAST_ANAL HISTOGRAM
+------------------------- -------------------- --------------- - ------------ -------------------- -------------------- ---------- ----------- --------- ---------------
+RK_DO                     OWNER                VARCHAR2        Y                                                                                         NONE
+RK_DO                     OBJECT_ID            NUMBER          Y                                                                                         NONE
 
 
 TABLE_NAME           COLUMN_NAME          DATA_TYPE            NUM_DISTINCT AVG_COL_LEN    DENSITY  NUM_NULLS NUM_BUCKETS HID VIR LAST_ANAL

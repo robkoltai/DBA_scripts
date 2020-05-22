@@ -1,7 +1,6 @@
 #!/bin/ksh
-#sqlplus -s ${V_USR_PSWD} <<EOS
+file="./sql_id_list.lst"
 
-file="/home/oracle/RK/sql_id_list.lst"
 # while loop
 while IFS= read -r line
 do
@@ -10,8 +9,8 @@ do
 
 sqlplus -s / as sysdba <<EOF
 
-@def_multi.sql $line
-@ss.sql
+@define_params $line
+@diag_one_sql.sql
 
 exit;
 EOF

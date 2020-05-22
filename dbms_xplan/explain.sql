@@ -62,3 +62,24 @@ where object_name like 'PLAN_TA%';
 2)
 explain plan into SYS.PLAN_TABLE$ for <your_stmt>
 select * from table(dbms_xplan.display(‘SYS.PLAN_TABLE$’));
+
+
+
+------------------- EXPLAIN WITH STATEMENT ID
+
+
+explain plan 
+  SET STATEMENT_ID = 'MIVAN'
+for 
+insert /*+ APPEND PARALLEL MONITOR */ into DM.AG_DEAL_BALANCE
+(
+    LOAD_ID,
+    UPDATE_ID,
+    CALENDAR_DATE,
+	...
+;
+
+SELECT * FROM table (
+  DBMS_XPLAN.DISPLAY(
+    statement_id  => 'MIVAN',
+    format        => 'ALL'));

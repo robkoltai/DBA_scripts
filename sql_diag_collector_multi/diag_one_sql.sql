@@ -18,40 +18,12 @@ set longch 2000000
 
 spool &sql_id._run0&test_run._01_APPLICATION.txt
 
-with 
-    MT_X as 
-    (
-        SELECT a.*, b.SCEN_NAME, b.SCEN_TASK_NO, b.TASK_NAME1, b.TASK_STATUS, b.TASK_DUR, b.TASK_BEG, b.TASK_END, b.NB_INS, b.NB_UPD, b.TASK_ERROR, b.TASK_CODE
-        FROM 
-            dwms.wrk_AIXPOC_MT_LP_X_LW1025_T&test_run. a
-          left outer join
-            dwms.wrk_AIXPOC_SesTask_LW1025_T&test_run. b
-                on (A.EXTERNAL_SESSION_ID = B.EXTERNAL_SESSION_ID)
-        where a.status='DONE'
-        and a.object_type_name='SCENARIO'
-    ),
-    dash as
-    (
-        select distinct sql_id,  
-            nvl(qc_session_id, session_id) session_id, 
-            nvl(qc_session_serial#, session_serial#) session_serial#,
-            regexp_replace(action, '(\d+)/(\d+)/(\d+)/(\d+)', '\1') external_session_id,
-            regexp_replace(action, '(\d+)/(\d+)/(\d+)/(\d+)', '\4') task_id
-        --    , qc_session_id, qc_session_serial#, action, count(*), min(sample_time) min_sample_time, max(sample_time) max_sample_time
-        from dwms.S_AIXDW_LW1025_T&test_run._DASH a
-        where a.SQL_ID in ( '&sql_id')  --Ide kell a keresett SQL_ID-k listaja 
-        group by sql_id, session_id, session_serial#, qc_session_id, qc_session_serial#, action
-        order by 1,2,3
-    )
-select x.object_long_name, x.task_name1, X.EXTERNAL_SESSION_ID, X.SCEN_TASK_NO, 
-  execution_start_time, execution_end_time, record_count, inserted_count, updated_count, deleted_count, task_beg, task_end
-from MT_X x
-where (X.EXTERNAL_SESSION_ID, X.SCEN_TASK_NO) in (select EXTERNAL_SESSION_ID, task_id from dash)
-order by 1,2;
+PROMPT TBD
 
 spool off;
+
 -- ************************************************************************************************************************************************************************
-spool &sql_id._run0&test_run._02_XPLAN_AWR.txt
+spool &sql_id._run0&test_run._02_DISPLAY_AWR.txt
 
 -- xplan
 PROMPT ** XPLAN from AWR
@@ -60,10 +32,10 @@ select * from TABLE(dbms_xplan.display_awr('&sql_id', format=>'advanced +note -a
 
 spool off;
 -- ************************************************************************************************************************************************************************
-spool &sql_id._run0&test_run._03_XPLAN_CURR.txt
+spool &sql_id._run0&test_run._03_DISPLAY_CURSOR.txt
 
 SELECT * FROM table (
-   DBMS_XPLAN.DISPLAY_CURSOR('&sql_id', NULL, 'ADVANCED ALLSTATS LAST -PROJECTION +ADAPTIVE'))
+   DBMS_XPLAN.DISPLAY_CURSOR('&sql_id', NULL, 'ADVANCED ALLSTATS ALL -PROJECTION +ADAPTIVE'))
 /
 
 spool off;
@@ -200,4 +172,49 @@ dbms_auto_report.Report_repository_detail(rid=>report_id,TYPE=>'ACTIVE') as z_re
 from dba_hist_reports rep 
 where key1='&sql_id' order by period_start_time desc;
 
-spool off 
+spool off
+
+-- *********************************** SQL TEXT ******************************************
+
+
+set heading off
+set pages 0
+set long   9000000
+set longch 9000000
+spool &sql_id._run0&test_run._11_SQL_TEXT.txt
+
+select sql_text
+from dba_hist_sqltext
+where sql_id  = '&sql_id';
+
+spool off;
+
+-- *********************************** SQL TEXT EXPANDED ******************************************
+
+-- Commented out as only selects are supported ...
+/*
+
+
+spool &sql_id._run0&test_run._12_SQL_TEXT_EXPANDED.txt
+
+SET SERVEROUTPUT ON 
+DECLARE
+  v_clob CLOB;
+  l_clob CLOB;
+BEGIN
+  select sql_text 
+  into v_clob
+  from dba_hist_sqltext
+  where sql_id = '&sql_id';
+  
+  DBMS_UTILITY.expand_sql_text (
+    input_sql_text  => v_clob,
+    output_sql_text => l_clob
+  );
+
+  DBMS_OUTPUT.put_line(l_clob);
+END;
+/
+spool off;
+*/
+
