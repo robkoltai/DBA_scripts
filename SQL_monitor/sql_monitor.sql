@@ -124,6 +124,67 @@ $ORACLE_HOME/rdbms/admin/perfhubrpt.sql
 
 
 -- ********************************
+-- GETTING SQL MONITOR DETAILS FROM XML
+-- ********************************
+SELECT /*+ NO_XML_QUERY_REWRITE */ t.report_id, x1.sql_id, x1.plan_hash, x1.sql_exec_id, x1.elapsed_time/1000000 ELAP_SEC
+FROM dba_hist_reports t    
+   , xmltable('/report_repository_summary/sql'    
+       PASSING xmlparse(document t.report_summary)    
+       COLUMNS    
+         sql_id                path '@sql_id'     
+       , sql_exec_start        path '@sql_exec_start'    
+       , sql_exec_id           path '@sql_exec_id'      
+       , status                path 'status'    
+       , sql_text			   path 'sql_text'
+       , first_refresh_time    path 'first_refresh_time'
+       , last_refresh_time     path 'last_refresh_time'
+       , refresh_count         path 'refresh_count'
+       , inst_id               path 'inst_id'
+       , session_id            path 'session_id'
+       , session_serial        path 'session_serial'
+       , user_id               path 'user_id'
+       , username              path 'user'
+       , con_id                path 'con_id'
+       , con_name              path 'con_name'
+       , modul                 path 'module'
+       , action                path 'action'
+       , service               path 'service'
+       , program               path 'program'
+       , plan_hash             path 'plan_hash'
+       , is_cross_instance     path 'is_cross_instance'
+       , dop				   path 'dop'
+       , instances             path 'instances'
+       , px_servers_requested  path 'px_servers_requested'
+       , px_servers_allocated  path 'px_servers_allocated'
+       , duration              path 'stats/stat[@name="duration"]'  
+       , elapsed_time          path 'stats/stat[@name="elapsed_time"]'  
+       , cpu_time              path 'stats/stat[@name="cpu_time"]'  
+       , user_io_wait_time     path 'stats/stat[@name="user_io_wait_time"]'
+       , application_wait_time path 'stats/stat[@name="application_wait_time"]'
+       , concurrency_wait_time path 'stats/stat[@name="concurrency_wait_time"]'
+       , cluster_wait_time     path 'stats/stat[@name="cluster_wait_time"]'
+       , plsql_exec_time       path 'stats/stat[@name="plsql_exec_time"]'
+       , other_wait_time       path 'stats/stat[@name="other_wait_time"]'
+       , buffer_gets           path 'stats/stat[@name="buffer_gets"]'
+       , read_reqs             path 'stats/stat[@name="read_reqs"]'
+       , read_bytes            path 'stats/stat[@name="read_bytes"]'
+     ) x1 
+where x1.elapsed_time/1000000 > 200
+and   t.COMPONENT_NAME = 'sqlmonitor'
+order by 5
+/			
+
+ REPORT_ID SQL_ID               PLAN_HASH            SQL_EXEC_ID           ELAP_SEC PX_REQ     PX_ALLOC
+---------- -------------------- -------------------- -------------------- --------- ---------- ----------
+      7687 3zk1hp8dk2zs6        3736380315           16777220                   215 14         14
+      9196 duxwqqg8un28r        0                    16777216                   268
+      3344 agmfaj1f82k5h        2732199398           33554432                   295 8          8
+      5182 agmfaj1f82k5h        2732199398           16777216                   305 8          8
+Now use corresponding REPORT_ID to generate complete report stored in AWR for specific SQL.
+
+SELECT DBMS_AUTO_REPORT.REPORT_REPOSITORY_DETAIL(RID => 5182, TYPE => 'TEXT') FROM DUAL;
+
+-- ********************************
 -- CROSSCHECK RUNS FROM OTHER SOURCES
 -- ********************************
 
@@ -146,11 +207,6 @@ order by 1 desc;
  
 -- XPLAN FROM AWR
 select * from TABLE(dbms_xplan.display_awr('&sql_id', format=>'advanced +note -alias +outline +predicate'));
-
-
-
-
-
 
 
 
