@@ -218,3 +218,18 @@ END;
 spool off;
 */
 
+-- *********************************** PLAN BASELINES ******************************************
+
+spool &sql_id._run0&test_run._13_SQL_PLAN_BASELINES.txt
+
+SELECT PLAN_TABLE_OUTPUT
+FROM   V$SQL s, DBA_SQL_PLAN_BASELINES b, 
+       TABLE(
+       DBMS_XPLAN.DISPLAY_SQL_PLAN_BASELINE(b.sql_handle,b.plan_name,'ALL') 
+       ) t
+WHERE  s.EXACT_MATCHING_SIGNATURE=b.SIGNATURE
+AND    b.PLAN_NAME=s.SQL_PLAN_BASELINE
+AND    s.SQL_ID='&sql_id';
+
+spool off;
+
