@@ -1,0 +1,20 @@
+Nyomozás közben összefutottam néhány linkkel:
+MOS:
+-	How to enable Large Page Feature on AIX-Based Systems (Doc ID 372157.1)
+o	Az alapok
+-	10.2.0.4 / 10.2.0.5 Not Using Large Pages On AIX (Doc ID 740603.1) 
+o	ORACLE_SGA_PGSZ=16m
+
+Vasal:
+-	https://unbeta.wordpress.com/2010/08/30/utilizing-large-memory-pages-for-oracle-on-aix/
+o	Ebben le van írva a „ORACLE_SGA_PGSZ=16m”, igaz, csak egy lépés, ami után még egy loader konfigot is végeznek egy 10g-ben tapasztalható bug elkerülésére
+-	http://dbasrus.blogspot.com/2009/06/size-sometimes-does-matter.html
+o	Ez meg egy még gépközelibb beállítási módot ad, amit inkább elkerülnék, de adott esetben jól jöhet
+o	export LDR_CNTRL=LARGE_PAGE_TEXT=Y@LARGE_PAGE_DATA=M
+-	https://mjoulel.github.io/project/lrgPg.html
+
+Memória lekérdezés:
+vmstat -P all
+svmon -G
+
+Ezt majd beírom a doksiba is, ha ráérek. 

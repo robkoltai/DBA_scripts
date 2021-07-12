@@ -202,6 +202,7 @@ select xmltransform(DBMS_QOPATCH.IS_PATCH_INSTALLED(&patch_id) , DBMS_QOPATCH.GE
 
 
 -- Ez a tutko PSU
+set lines 180
 https://blog.pythian.com/oracle-database-12c-patching-dbms_qopatch-opatch_xml_inv-and-datapatch/
 with a as (select dbms_qopatch.get_opatch_lsinventory patch_output from dual)
    select x.*

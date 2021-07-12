@@ -5,4 +5,4 @@ The shell script runt the ss.sql for each SQL_ID.
 One can collect APPLICATION, XPLAN_ASH, DISPLAY_CURSOR ... information for many SQLS
 
 
-xplan_ash_cmdline.sql from RANDOLF GEIS IS NEEDED
+xplan_ash_cmdline.sql from RANDOLF GEIST IS NEEDED
