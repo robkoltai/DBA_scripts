@@ -1,5 +1,4 @@
-
-
+-- GITTEST
 -- This SQL lists the big tables taking into account the index, lob, lobindex sizes
 -- and works for partitioned objects as well
 /*
