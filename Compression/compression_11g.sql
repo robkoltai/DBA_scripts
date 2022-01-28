@@ -1,3 +1,14 @@
+/*
+
+Találtam hibát a scriptem, jelenleg az utolsó lekérdezés join-ja kiszűri az összes partícionált lobot, mivel a LOB_PARTITIONS nézetben a lobok partíció neve LOB_<azonosító> formátumúak, míg a DBA_SEGMENTS-ben tárolt partíciónevek LOB_SYS_<azonosító> formátumúak. Ráadásul ezek az azonosítók sem egyeznek. Felteszem object_id alapján tudja összerendelni, de ennek nem mentem utána.
+
+Úgy bukott ki a dolog, hogy azért lekérdezgettem a DBA_FEATURE_USAGE_STATISTICS nézetet is, és egyszer csak ott  mutatott secure_file_compression használatot, míg a scriptben nem volt ilyen, és utánamentem, hogy mi lehet a gond.
+
+
+
+*/
+
+
 --11g
 alter session set workarea_size_policy=manual;
 alter session set sort_area_size=500000000;

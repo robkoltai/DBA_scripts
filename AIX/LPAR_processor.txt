@@ -86,3 +86,108 @@ https://www.ibm.com/support/knowledgecenter/en/ssw_aix_72/com.ibm.aix.prftools/p
 
 CPU and throughput
 http://ksun-oracle.blogspot.hu/2015/04/ibm-aix-power7-cpu-usage-and-throughput.html
+
+Szia, Dávid!
+                Ez az eltérés nem anomália, egyszerűen más van az ábrákon:
+
+                Röviden:
+-	LPAR2RRD: 
+o	Fizikai CPU (PCPU) kiosztást mutatja: az LPAR egy adott időszakban a hypervisor mennyi fizikai CPU core-t rendelt az LPAR-hoz: gyakorlatilag ennyi PCPU van bedugva a virtuális gépbe
+-	NMON: 
+o	„C”: alapból OS szemszögből, azaz Logikai CPU (LCPU) kihasználtságot mutat 
+	Simán lehet, hogy nem használjuk azt a CPU-t OS oldalon, ami rendelkezésre áll (mint ahogy a fizikai gépben sem használjuk mindig 100%-on a CPU-kat)
+o	„t”: a CPU fogyasztás itt is PCPU, de ez már a PCPU-erő fogyasztása: az adott processz egy Core mekkora számítási kapacitását vette igénybe. 
+	Ennek a maximum értéke az éppen használt SMT mód értéke: SMT1-ben ez a COre erejének max 30-35% lehet! Azaz, ha egy process 31.9%-ot fogyaszt, akkor az adott Core-t gyakorlatilag teljesen kihajtja! 
+
+                Hosszan:
+-	LPAR2RRD: 
+o	A Fizikai CPU (PCPU) kiosztást mutatja: azt, hogy időarányosan mennyi CPU-t kapott az LPAR. Ha ez mondjuk 13, akkor egy másodperc alatt átlagosan 13 db fizikai CPU Core lett kiosztva az LPARnak.
+o	Ebből a szempontból nem számít, hogy SMT1-ben vagy SMT8-ban használódik közben a CPU. Az ábrázolt esetben SMT2-ben használjuk, de az nincs kiütve, még egy csomó számítást el tudna végezni a rendszer a megkapott PCPU
+-	Nmon:
+o	Tud Logikai és Fizikai CPU-kat is mutatni
+o	Alapból az OS szemszögéből látott, ún. Logikai CPU (LCPU) használatot mutatja
+o	a „C”-n látszanak a leglényegesebb összefoglaló adatok mindkét esetre
+	A felső sorban 
+•	az „EntitledCPU=” azt mutatja, hogy mennyi CPU-t kap meg mindenképp az LPAR (amiből aztán adakozhat, ha akar)
+•	A „UsedCPU=” azt mutatja, hogy valójában mennyi PCPU lett kiosztva/elhasználva az LPAR által
+o	Ha az LPAR-nak nem kell az eredetileg neki kiosztott PCPU , és ezért visszaadja a közösbe, akkor a UsedCPU kisebb, mint az EntitledCPU. 
+o	Ha az LPAR még igényelt volna több PCPU-t, és volt is szabadon, ezért kapott is, akkor a UsedCPU nagyobb, mint az EntitledCPU
+	Minden LCPU-hoz tartozik egy „oszlop” a grafikonon, 
+•	egy sorban 64 LCPU látszik
+•	mivel nektek 128 LCPU van, ezért két sor kell
+•	Amikor 24 VCPU-val mentetek, akkor 192 LCPU-tok volt, ezért 3 sor kellett
+o	És maikor elvettétek tőle a 24-ből 8-at, nem pont az utolsó 8 VCPU-t vette el a Hypervisor, ezért volt olyan is, hogy a 16-ból az egyik VCPU a harmadik sorban volt ábrázolva
+	Az első 64db CPU-t mutató grafikon részlet jobb szélén van egy „mindent összefoglaló” részlet, az „Avg=LP”, ami az egész LPAR-ra aggregált értékeket mutatja
+•	Az „L” a Logikai CPU használatot mutatja, azaz hogy az összes threadet figyelembe véve a „falióra” szerint mennyire volt használva az összes LCPU
+•	A „P” pedig a fizikai CPU (Physical CPU, PCPU) kihasználtságát mutatja
+•	Itt az általad küldött képen jól látszik, hogy 
+ 
+o	bár 13.369 PCPU-t kapott meg az LPAR, 
+o	ebből LCPU szintjén valahol 5-15% közt van a használat mértéke (csak a 10%-ig ér fel a grafikon), vagyis az OS szintű „Idle” kb. 85% lenne
+o	a megkapott PCPU-kban rejlő számítási kapacitás kihasználtsága pedig valójában kb. 35-45% közt van (ez alig több, mint amit SMT1 módban tudna a rendszer, egy gyengén kihasznált SMT2 használatot látunk)
+o	sajnos igazából nem tudom, hogy pontosan a „Bar” grafikon rajzolásánál kerekít vagy vág az nmon, de mivel ez egy hozzávetőleges érték, ezért kb. mindegy is
+o	a „c” grafikon ugyanezeket mutatja, de sajnos a 128 LCPU miatt az alján lévő összefoglaló nem látszik, csak ha nagyon lekicsinyíted a betűméretet: 
+┌─topas_nmon──v=Verbose-hints────Host=dwh-pdw-bar────Refresh=2 secs───07:24.42──┐
+│ CPU-Utilisation-Small-View ───────────EntitledCPU= 16.00 UsedCPU= 14.298──────│
+│Logical  CPUs              0----------25-----------50----------75----------100 │
+│CPU User%  Sys% Wait% Idle%|           |            |           |            | │
+│  0  67.5   4.5  17.0  11.0|UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUssWWWWWWWW    > | │
+│  1  56.5   1.0  20.0  22.5|UUUUUUUUUUUUUUUUUUUUUUUUUUUUWWWWWWWWWW      >    | │
+│  2  32.5   1.5  14.5  51.5|UUUUUUUUUUUUUUUUWWWWWWW                    >     | │
+│  3  35.0   0.5   8.5  56.0|UUUUUUUUUUUUUUUUUWWWW                          > | │
+│  4   0.0   0.0   0.0 100.0|     >                                           | │
+│  5   0.0   0.0   0.0 100.0|     >                                           | │
+│  6   0.0   0.0   0.0 100.0|       >                                         | │
+│  7   0.0   0.0   0.0 100.0|        >                                        | │
+…
+│127   0.0   0.0   0.0 100.0|        >                                        | │
+│EntitleCapacity/VirtualCPU +-----------|------------|-----------|------------+ │
+│ EC  47.4   3.1   1.9  37.0|UUUUUUUUUUUUUUUUUUUUUUUsiiiiiiiiiiiiiiiiii-------| │
+│ VP  47.4   3.1   1.9  37.0|UUUUUUUUUUUUUUUUUUUUUUUsiiiiiiiiiiiiiiiiii-------| │
+│EC=  89.4%  VP=  89.4%     +--No Cap---|------------|-----------100% VP=16CPU+ │
+│───────────────────────────────────────────────────────────────────────────────│
+	A fejlécben itt is látszik az EntitledCPU és a UsedCPU
+	Itt a sorok tartoznak az egyes LCPU-khoz
+	Az alján pedig az összefoglaló, a „EntitleCapacity/VirtualCPU” rész:
+•	EC: A valójában kiosztott PCPU milyen arányban van felhasználva az OS által:
+o	U- User, s- System, W-waitio, i-Idle, 
+o	A „-” – az el nem használt / közösbe adott részt jelöli
+	Ha az LPAR kap plusz PCPU erőforrást az eredeti EntiledCPU felett, akkor a „-” nem szokott megjelenni, vagy csak 1db van belőle
+•	VP: Az összes VCPU-ra vonatkozó felhasználást mutatja.
+o	Ha nem teljes időben vannak használva a VCPU-k, akkor ez a sor kisebb használatot mutat, mint az EC
+o	Pl. ha az LPARnak van 5db VCPU-ja, de csak 2.5 PCPU-t használ, és a Hypervisor mind az 5 VCPU-ra tud adni PCPU-t, akkor a VP csík csak az 50%-ig fog elérni: ez arra utal, hogy ilyenkor az idő felében van az összes VCPU használva (1/2*5=2.5)
+o	Nálatok ekkor nem volt ilyen, ezért a két csík egyforma hosszú
+	Alul van még néhány aggregáció:
+•	Jobb szélen: VP=16CPU: Hány db VCPU van az LPAR-ban
+•	Kicsit balrább lehetne egy „Folded” szám, ami az „eltakart” VCPU-kat mutatja: ezekre a Hypervisor és az OS együtt kimondta, hogy nem akar, vagy nem tud PCPU-t tenni 
+o	ha a Folding mechanizmus nem lenne, akkor egy terheletlen LPAR-nak is ugyanannyi PCPU-t kellene kiosztani, amennyi a teljesen leterhelt esethez kell
+•	„EC=”: UsedCPU/EntitledCPU
+•	„VP=”: UsedCPU/VP  (a jobb szélen lévő VP= VCPU szám)
+o	Van még egy „Long Term CPU” grafikon is („l”, kis L betű), aminél az X tengely az idő, az Y tengely a CPU használat
+	Ennek kell egy kis idő, amíg magára talál, ezalatt néha kiírja, hogy RESCALING, néha nem, de csinálja 😊
+o	És hogy mindenbe belekavarjon, van egy „#” gomb is, ami bizonyos helyeken az LCPU-t lecseréli PCPU adatokra
+	„l”-ben a grafikon azt mutatja, amit az LPAR2RRD (a kiosztott PCPU-kat)
+•	A fejléc nem változik
+•	de az „UsWi” karakterek helyett „P”-ket mutat a grafikon
+	„c”-ben a sorok az egyes szálakra jutó PCPU felhasználást mutatják 
+•	Ekkor a fejléc: „PURR Stats”
+•	ez gyakorlatilag egy thread esetében nem lehet nagyobb, mint 35%, tehát nem kell megijedni, hogy milyen kicsik a számok
+•	pl. egyenletes SMT8 terheléskor minden thread 12.5% lenne
+•	SMT1-ben pedig kb. 30-35% van az első szálon, a többi 0
+•	Mivel a „EntitleCapacity/VirtualCPU” rész eddig is PCPU adatokat mutatott, ez nem változik.
+	A „C” grafikon 
+•	A fejléc nem változik
+•	Az „UsWi” betűk nem változnak
+•	DE a grafikon a 100% már nem a falióra szerinti erőforrás foglalást mutatja, hanem az adott threadre várható maximum fizikai erőforrás értéket.
+•	Ennek megfelelően általában magasabbak a csúcsok:
+o	Amelyik process futni akar, az kb. 100%-ig feltolja a grafikont
+o	A nem-100% azt jelzi, hogy arra a LCPU-ra nem kellett processzt ütemezni (nem volt futóképes process)
+•	Mivel nem mond semmit, amiből kiderül, hogy LCPU vagy PCPU adatokat mutat, ezért érdemes mellette a LongTerm CPU-t is elindítani, mert ott látszik, a P betűzés.
+o	A „t”, azaz a Top Processes-ben a CPU a processzenkénti fizikai PCPU használatot mutatja (PURR értékek)
+	Ez SMT1-ben kb. 30-35% lehet (pl. a 31.9% egy kiütött core-t jelent)
+	SMT8-ban pedig kb. 12-13% maximum egy-egy threadre (így összesen 100% fizikai CPU erőt tudnak kihasználni)
+	Vagyis az SMT1-ben egy szálra jutó számítási teljesítmény kb. 3x-osa az SMT8-ban egy szálra jutó számítási teljesítménynek.
+
+Üdv,
+Havasi Zoltán
+senior adatbázis szakértő
