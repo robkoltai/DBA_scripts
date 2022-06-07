@@ -1,3 +1,4 @@
+set lines 150
 column name format a24
 column value format a18
 column time_computed format a20

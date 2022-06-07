@@ -1,20 +1,23 @@
 set lines 150
-set pages 100
+set pages 25
 column name format a25
-column value format a107
+column value format a99
 select name, value from v$parameter where name in ( 
         'log_archive_dest_1',
         'log_archive_dest_2',
+		'log_archive_dest_state_1',
+		'log_archive_dest_state_2',
         'log_archive_config',
-		'db_unique_name',
         'fal_server',
-		'standby_file_management',
-		'db_file_name_convert',
-		'log_file_name_convert',
 		'dg_broker_config_file1',
 		'dg_broker_config_file2',
-		'service_names',
-		'archive_lag_target'
+		'dg_broker_start',
+		'standby_file_management',
+		'db_file_name_convert',
+		'redo_transport_user',
+		-- x seconds after one sync destination acknowledged, 
+		-- primary can disconnect any subsequent sync destinations
+		'data_guard_sync_latency' 
 )
 order by name;
 
