@@ -1,4 +1,5 @@
-column member format a45
+set lines 150
+column member format a60
 column group# format 9999
 column dbid format a12
 column status format a14
