@@ -1,0 +1,10 @@
+
+# This ugly, unprofessional one-liner is able to get the PROGRAMS used to access the DB in all *listener.log files of the current directory
+#
+sed -n 's!^.*\(PROGRAM.*USER\).*!\1!p' *listener.log | sed -n 's!^.*\(PROGRAM.*HOST\).*!\1!p' |  sed -n 's!^.*\(PROGRAM.*\))(.*!\1!p' |  rev| cut -d'\' -f-1|rev  | sort –u
+
+
+Example output:
+au.exe
+TOAD.exe
+vau.exe
